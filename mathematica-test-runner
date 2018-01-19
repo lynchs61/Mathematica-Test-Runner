@@ -8,7 +8,10 @@
 (* :Author: Sean Lynch *)
 (* :Date: 2018-01-19 *)
 
-version = 0.0.1;
+version = "0.0.1";
+
+versionInfo[] :=
+    StringTemplate["Version: ``"][version];
 
 usage[] :=
     StringTemplate["
@@ -23,4 +26,10 @@ usage[] :=
 "
     ][<|"name" -> $ScriptCommandLine[[1]]|>];
 
-Print[usage[]];
+(* Already used the name so get rid of it before further processing *)
+argv = Rest[$ScriptCommandLine];
+
+If[MemberQ[argv, "-h" | "--help"], Print[usage[]]; Exit[]];
+If[MemberQ[argv, "-V" | "--version"], Print[versionInfo[]] Exit[]];
+
+Print[argv]
