@@ -1,0 +1,26 @@
+#!/usr/bin/env wolframscript
+
+(* Mathematica Package *)
+(* Created by Mathematica Plugin for IntelliJ IDEA *)
+
+(* :Title: mathematica-test-runner *)
+(* :Context: mathematica-test-runner` *)
+(* :Author: Sean Lynch *)
+(* :Date: 2018-01-19 *)
+
+version = 0.0.1;
+
+usage[] :=
+    StringTemplate["
+    Usage: `name` [options] [file|directory]
+
+    Options:
+
+      -V, --version    Output the version number
+      -h, --help       Output usage information
+      -R, --reporter   Specify a reporter to use. Currently this can be one of
+                       the following options: {spec, tap}
+"
+    ][<|"name" -> $ScriptCommandLine[[1]]|>];
+
+Print[usage[]];
