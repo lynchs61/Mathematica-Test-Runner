@@ -13,23 +13,52 @@ version = "0.0.1";
 versionInfo[] :=
     StringTemplate["Version: ``"][version];
 
+(* When adding a new reporter, be sure to add it to this list so it's handled
+   correctly *)
+possibleReporters = {"spec", "tap", "json"};
+
+parseReporter[argv_] :=
+    If[Length[argv] < 2,
+      <|"exit" -> "error",
+        "msg" -> StringTemplate["Please specify `` as a reporter"][possibleReporters]|>,
+      Rest[argv];
+      If[FreeQ[possibleReporters, First[argv]],
+        <|"exit" -> "error",
+          "msg" -> StringTemplate["'``' is not a valid reporter"][First[argv]]|>,
+
+      ]
+    ]
+
+parseInitialState[argv_] :=
+    If[Length[argv] == 0 | MatchQ[First[argv], "-h" | "--help"],
+      <|"exit" -> "help"|>,
+      If[MatchQ[First[argv], "-V" | "--version"],
+        <|"exit" -> "version"|>,
+        If[MatchQ[First[argv], "-R" | "--reporter"],
+          parseReporter[argv],
+          parseTarget[argv]
+        ]
+      ]
+    ]
+
+parseOpts[argv_] :=
+    parseInitialState[argv]
+
 usage[] :=
     StringTemplate["
-    Usage: `name` [options] [file|directory]
+        Usage: `name` [options] [file|directory]
 
-    Options:
+        Options:
 
-      -V, --version    Output the version number
-      -h, --help       Output usage information
-      -R, --reporter   Specify a reporter to use. Currently this can be one of
-                       the following options: {spec, tap}
-"
-    ][<|"name" -> $ScriptCommandLine[[1]]|>];
+          -V, --version    Output the version number
+          -h, --help       Output usage information
+          -R, --reporter   Specify a reporter to use. Currently this can be one of
+                           the following options: `reporters`
+    "
+    ][<|"name" -> $ScriptCommandLine[[1]], "reporters" -> possibleReporters|>];
 
 (* Already used the name so get rid of it before further processing *)
 argv = Rest[$ScriptCommandLine];
 
-If[MemberQ[argv, "-h" | "--help"], Print[usage[]]; Exit[]];
-If[MemberQ[argv, "-V" | "--version"], Print[versionInfo[]] Exit[]];
 
-Print[argv]
+
