@@ -13,52 +13,103 @@ version = "0.0.1";
 versionInfo[] :=
     StringTemplate["Version: ``"][version];
 
+usage[] := StringTemplate["
+  Usage: `name` [options] [targetFile|targetDirectory]
+
+  Options:
+
+    -V, --version    Output the version number
+    -h, --help       Output usage information
+    -R, --reporter   Specify a reporter to use. Currently this can be one of
+                     the following options: `reporters`
+"
+][<|"name" -> $ScriptCommandLine[[1]], "reporters" -> possibleReporters|>];
+
+
 (* When adding a new reporter, be sure to add it to this list so it's handled
    correctly *)
 possibleReporters = {"spec", "tap", "json"};
 
-parseReporter[argv_] :=
-    If[Length[argv] < 2,
-      <|"exit" -> "error",
-        "msg" -> StringTemplate["Please specify `` as a reporter"][possibleReporters]|>,
-      Rest[argv];
-      If[FreeQ[possibleReporters, First[argv]],
-        <|"exit" -> "error",
-          "msg" -> StringTemplate["'``' is not a valid reporter"][First[argv]]|>,
-
-      ]
-    ]
-
-parseInitialState[argv_] :=
-    If[Length[argv] == 0 | MatchQ[First[argv], "-h" | "--help"],
-      <|"exit" -> "help"|>,
-      If[MatchQ[First[argv], "-V" | "--version"],
-        <|"exit" -> "version"|>,
-        If[MatchQ[First[argv], "-R" | "--reporter"],
-          parseReporter[argv],
-          parseTarget[argv]
+parseTarget[argv_, prevResult_] :=
+    Module[{argList, result},
+      result = prevResult;
+      argList = argv;
+      If[Length[argList] == 0,
+        CompoundExpression[
+          result["exit"] = "help",
+          result["msg"] = "Must specify a target.",
+          result
+        ],
+        CompoundExpression[
+          result["target"] = First[argList],
+          result
         ]
       ]
     ]
 
-parseOpts[argv_] :=
-    parseInitialState[argv]
+parseReporter[argv_, prevResult_] :=
+    Module[{argList, result},
+      result = prevResult;
+      argList = argv;
+      If[Length[argList] == 0,
+        CompoundExpression[
+          result["exit"] = "help",
+          result["msg"] = "Must specify a reporter.",
+          result
+        ],
+        If[FreeQ[possibleReporters, First[argv]],
+          CompoundExpression[
+            result["exit"] = "help",
+            result["msg"] = StringTemplate["'``' is not a valid reporter. Please choose from ``"][First[argv], possibleReporters],
+            result
+          ],
+          CompoundExpression[
+            result["reporter"] = First[argv],
+            parseTarget[Rest[argList], result]
+          ]
+        ]
+      ]
+    ]
 
-usage[] :=
-    StringTemplate["
-        Usage: `name` [options] [file|directory]
+parseInitialState[argv_] :=
+    Module[{},
+      If[StringMatchQ[First[argv], "-*"],
+        If[MatchQ[First[argv], "-h" | "--help"],
+          <|"exit" -> "help"|>,
+          If[MatchQ[First[argv], "-V" | "--version"],
+            <|"exit" -> "version"|>,
+            If[MatchQ[First[argv], "-R" | "--reporter"],
+              parseReporter[Rest[argv], <||>],
+              <|"exit" -> "help",
+                "msg" ->
+                    StringTemplate["Invalid option '``'"][First[argv]]|>
+            ]
+          ]
+        ],
+        parseTarget[argv, <|"reporter" -> "spec"|>]
+      ]
+    ]
 
-        Options:
+parseOpts[scriptCommandLine_] :=
+    Module[{argList},
+      argList = Rest[scriptCommandLine];
+      If[Length[argList] == 0,
+        <|"exit" -> "help",
+          "msg" -> "Must specify a target file or directory"|>,
+        parseInitialState[argList]
+      ]
+    ]
 
-          -V, --version    Output the version number
-          -h, --help       Output usage information
-          -R, --reporter   Specify a reporter to use. Currently this can be one of
-                           the following options: `reporters`
-    "
-    ][<|"name" -> $ScriptCommandLine[[1]], "reporters" -> possibleReporters|>];
+argsResult = parseOpts[$ScriptCommandLine];
 
-(* Already used the name so get rid of it before further processing *)
-argv = Rest[$ScriptCommandLine];
+If[KeyExistsQ[argsResult, "exit"],
+  Switch[argsResult["exit"],
+    "version", Print[versionInfo[]]; Exit[];,
+    "help", If[KeyExistsQ[argsResult, "msg"], Print[argsResult["msg"]]]; Print[usage[]]; Exit[];
+  ];
+];
+
+Print[argsResult];
 
 
 
