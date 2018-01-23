@@ -107,7 +107,23 @@ If[KeyExistsQ[argsResult, "exit"],
   ];
 ];
 
-Print[argsResult];
+Module[{fileList, results},
+  fileList = {};
+
+  fileList = FileNames["test*", argsResult["target"], IgnoreCase -> True];
+  If[Length[fileList] == 0,
+    If[FileExistsQ[argsResult["target"]],
+      AppendTo[fileList, argsResult["target"]]
+    ]
+  ];
+
+  If[Length[fileList] == 0,
+    Print[StringTemplate["The target '``' is neither a directory with test files, nor an individual test file."][argsResult["target"]]]; Exit[]
+  ];
+
+  results = TestReport /@ fileList;
+  Print[results];
+]
 
 
 
