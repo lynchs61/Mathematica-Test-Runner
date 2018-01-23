@@ -1,10 +1,8 @@
 #!/usr/bin/env wolframscript
 
-(* Mathematica Package *)
 (* Created by Mathematica Plugin for IntelliJ IDEA *)
 
 (* :Title: mathematica-test-runner *)
-(* :Context: mathematica-test-runner` *)
 (* :Author: Sean Lynch *)
 (* :Date: 2018-01-19 *)
 
