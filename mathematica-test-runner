@@ -16,10 +16,23 @@ usage[] := StringTemplate["
 
   Options:
 
-    -V, --version    Output the version number
-    -h, --help       Output usage information
-    -R, --reporter   Specify a reporter to use. Currently this can be one of
-                     the following options: `reporters`
+    -V, --version              Output the version number
+    -h, --help                 Output usage information
+    -R, --reporter <reporter>  Specify a reporter to use. The default is 'spec'.
+                               Choose from one of the following options:
+                               `reporters`.
+
+  Reporters:
+
+    'spec'        - The default reporter - simply outputs a nested view of the
+                    high-level results, showing successes and fails and a short
+                    summary at the end.
+    'mathematica' - Output the results exactly as they come from the Mathematica
+                    front-end.
+    'json'        - The results are given as a single JSON object that
+                    corresponds to each TestReportObject.
+    'tap'         - The TAP reporter emits lines for a Test-Anything-Protocol
+                    consumer.
 "
 ][<|"name" -> $ScriptCommandLine[[1]], "reporters" -> possibleReporters|>];
 
@@ -127,7 +140,7 @@ If[KeyExistsQ[argsResult, "exit"],
 Module[{fileList, results},
   fileList = {};
 
-  fileList = FileNames["test*", argsResult["target"], IgnoreCase -> True];
+  fileList = FileNames["*", argsResult["target"], IgnoreCase -> True];
   If[Length[fileList] == 0,
     If[FileExistsQ[argsResult["target"]],
       AppendTo[fileList, argsResult["target"]]
