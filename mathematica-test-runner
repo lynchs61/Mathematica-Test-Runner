@@ -100,6 +100,20 @@ parseOpts[scriptCommandLine_] :=
 
 argsResult = parseOpts[$ScriptCommandLine];
 
+outputJSON[testResults_] :=
+    Module[{outputResults},
+      outputResults = <|
+        "stats" ->
+            <|"files" -> Length[testResults],
+              "duration" -> QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults), "Milliseconds"],
+              "tests" -> Plus @@ Flatten[{#["TestsSucceededCount"], #["TestsFailedCount"]} & /@ testResults],
+              "passes" -> Plus @@ (#["TestsSucceededCount"] & /@ testResults),
+              "failures" -> Plus @@ (#["TestsFailedCount"] & /@ testResults)|>,
+        "tests" -> <||>|>;
+      
+      Print[ExportString[outputResults, "RawJSON"]]
+    ];
+
 outputMathematica[testResults_] :=
     Print[ToString[InputForm[testResults]]];
 
