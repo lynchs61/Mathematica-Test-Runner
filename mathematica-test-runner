@@ -26,7 +26,7 @@ usage[] := StringTemplate["
 
 (* When adding a new reporter, be sure to add it to this list so it's handled
    correctly *)
-possibleReporters = {"spec", "tap", "json"};
+possibleReporters = {"spec", "tap", "json", "mathematica"};
 
 parseTarget[argv_, prevResult_] :=
     Module[{argList, result},
@@ -100,6 +100,9 @@ parseOpts[scriptCommandLine_] :=
 
 argsResult = parseOpts[$ScriptCommandLine];
 
+outputMathematica[testResults_] :=
+    Print[ToString[InputForm[testResults]]];
+
 If[KeyExistsQ[argsResult, "exit"],
   Switch[argsResult["exit"],
     "version", Print[versionInfo[]]; Exit[];,
@@ -122,7 +125,13 @@ Module[{fileList, results},
   ];
 
   results = TestReport /@ fileList;
-  Print[results];
+
+  Switch[argsResult["reporter"],
+    "mathematica", outputMathematica[results],
+    "json", outputJSON[results],
+    "tap", outputTAP[results],
+    "spec", outputSpec[results]
+  ];
 ]
 
 
