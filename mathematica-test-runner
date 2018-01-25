@@ -113,18 +113,48 @@ parseOpts[scriptCommandLine_] :=
 
 argsResult = parseOpts[$ScriptCommandLine];
 
+getTestObject[testReportObject_, outcome_] :=
+    Module[{topTitle, results, tests},
+      topTitle = testReportObject["Title"];
+      results = List @@ testReportObject["TestResults"];
+      If[#["Outcome"] == outcome,
+        <|"title" -> ToString[#["TestID"]],
+          "fullTitle" -> topTitle <> " - " <> ToString[#["TestID"]],
+          "duration" ->
+              N[QuantityMagnitude[#["AbsoluteTimeUsed"], "Milliseconds"]],
+          "err" -> If[#["Outcome"] == "Failure",
+            <|"expected" ->
+                StringTemplate["expected `` to equal ``"][
+                  ToString[#["ExpectedOutput"]], ToString[#["ActualOutput"]]],
+              "expectedMessages" ->
+                  StringTemplate["expected `` to equal ``"][
+                    ToString[#["ExpectedMessages"]],
+                    ToString[#["ActualMessages"]]]|>, <||>]|>,
+        {}
+      ] & /@ results
+    ];
+
 outputJSON[testResults_] :=
-    Module[{outputResults},
+    Module[{successTests, failureTests, outputResults},
+      successTests =
+          Flatten[getTestObject[#, "Success"] & /@ testResults];
+      failureTests =
+          Flatten[getTestObject[#, "Failure"] & /@ testResults];
       outputResults = <|
-        "stats" ->
-            <|"files" -> Length[testResults],
-              "duration" -> QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults), "Milliseconds"],
-              "tests" -> Plus @@ Flatten[{#["TestsSucceededCount"], #["TestsFailedCount"]} & /@ testResults],
-              "passes" -> Plus @@ (#["TestsSucceededCount"] & /@ testResults),
-              "failures" -> Plus @@ (#["TestsFailedCount"] & /@ testResults)|>,
-        "tests" -> <||>|>;
-      
-      Print[ExportString[outputResults, "RawJSON"]]
+        "stats" -> <|"files" -> Length[testResults],
+          "duration" ->
+              QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults),
+                "Milliseconds"],
+          "tests" ->
+              Plus @@ Flatten[{#["TestsSucceededCount"], #[
+                  "TestsFailedCount"]} & /@ testResults],
+          "passes" -> Plus @@ (#["TestsSucceededCount"] & /@ testResults),
+          "failures" ->
+              Plus @@ (#["TestsFailedCount"] & /@ testResults)|>|>;
+      outputResults["tests"] = Flatten[{successTests, failureTests}];
+      outputResults["passes"] = successTests;
+      outputResults["failures"] = failureTests;
+      Print[ExportString[outputResults, "RawJSON"]];
     ];
 
 outputMathematica[testResults_] :=
