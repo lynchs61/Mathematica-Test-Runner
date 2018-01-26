@@ -113,52 +113,91 @@ parseOpts[scriptCommandLine_] :=
 
 argsResult = parseOpts[$ScriptCommandLine];
 
-getTestObject[testReportObject_, outcome_] :=
+getTestObject[testReportObject_, outcomePattern_] :=
     Module[{topTitle, results, tests},
       topTitle = testReportObject["Title"];
       results = List @@ testReportObject["TestResults"];
-      If[#["Outcome"] == outcome,
-        <|"title" -> ToString[#["TestID"]],
+      If[StringMatchQ[#["Outcome"], outcomePattern],
+        <|"filetitle" -> topTitle,
+          "title" -> ToString[#["TestID"]],
           "fullTitle" -> topTitle <> " - " <> ToString[#["TestID"]],
-          "duration" ->
-              N[QuantityMagnitude[#["AbsoluteTimeUsed"], "Milliseconds"]],
-          "err" -> If[#["Outcome"] == "Failure",
-            <|"expected" ->
-                StringTemplate["expected `` to equal ``"][
-                  ToString[#["ExpectedOutput"]], ToString[#["ActualOutput"]]],
-              "expectedMessages" ->
-                  StringTemplate["expected `` to equal ``"][
-                    ToString[#["ExpectedMessages"]],
-                    ToString[#["ActualMessages"]]]|>, <||>]|>,
-        {}
-      ] & /@ results
+          "duration" -> N[QuantityMagnitude[#["AbsoluteTimeUsed"], "Milliseconds"]],
+          "status" -> #["Outcome"],
+          "err" ->
+              If[#["Outcome"] == "Failure",
+                <|"expected" -> StringTemplate["expected `` to equal ``"][ToString[#["ExpectedOutput"]], ToString[#["ActualOutput"]]],
+                  "expectedValue" -> ToString[#["ExpectedOutput"]],
+                  "actualValue" -> ToString[#["ActualOutput"]],
+                  "expectedMessages" -> StringTemplate["expected `` to equal ``"][ToString[#["ExpectedMessages"]], ToString[#["ActualMessages"]]]|>,
+                <||>
+              ]
+        |>, {}] & /@ results
     ];
 
+getTotalDurationInMS[testResults_] :=
+    IntegerPart[QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults), "Milliseconds"]]
+
 outputJSON[testResults_] :=
-    Module[{successTests, failureTests, outputResults},
-      successTests =
-          Flatten[getTestObject[#, "Success"] & /@ testResults];
-      failureTests =
-          Flatten[getTestObject[#, "Failure"] & /@ testResults];
+    Module[{outputResults},
       outputResults = <|
-        "stats" -> <|"files" -> Length[testResults],
-          "duration" ->
-              QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults),
-                "Milliseconds"],
-          "tests" ->
-              Plus @@ Flatten[{#["TestsSucceededCount"], #[
-                  "TestsFailedCount"]} & /@ testResults],
+        "stats" -> <|
+          "files" -> Length[testResults],
+          "duration" -> getTotalDurationInMS[testResults],
+          "tests" -> Plus @@ Flatten[{#["TestsSucceededCount"], #["TestsFailedCount"]} & /@ testResults],
           "passes" -> Plus @@ (#["TestsSucceededCount"] & /@ testResults),
-          "failures" ->
-              Plus @@ (#["TestsFailedCount"] & /@ testResults)|>|>;
-      outputResults["tests"] = Flatten[{successTests, failureTests}];
-      outputResults["passes"] = successTests;
-      outputResults["failures"] = failureTests;
+          "failures" -> Plus @@ (#["TestsFailedCount"] & /@ testResults)|>|>;
+      outputResults["tests"] = Flatten[getTestObject[#, "Success" | "Failure"] & /@ testResults];
+      outputResults["passes"] = Flatten[getTestObject[#, "Success"] & /@ testResults];
+      outputResults["failures"] = Flatten[getTestObject[#, "Failure"] & /@ testResults];
       Print[ExportString[outputResults, "RawJSON"]];
     ];
 
 outputMathematica[testResults_] :=
     Print[ToString[InputForm[testResults]]];
+
+outputSpec[testResults_] :=
+    Module[{successCount, failureCount, duration, esc, tests, failures},
+
+    (*
+     * Colors for printing to the console
+     * See: https://mathematica.stackexchange.com/a/164487/90
+     *)
+      esc = Association["reset" -> "\033[1;0m", "red" -> "\033[0;31m",
+        "green" -> "\033[1;32m", "gray" -> "\033[0;37m"];
+
+      duration = getTotalDurationInMS[testResults];
+      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
+      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+
+      tests = Flatten[getTestObject[#, "Failure" | "Success"] & /@ testResults];
+      failures = Flatten[getTestObject[#, "Failure"] & /@ testResults];
+
+      If[failureCount > 0, failures = Flatten[getTestObject[#, "Failure"] & /@ testResults]];
+
+      CompoundExpression[
+        Print["\n  ", First[#]["filetitle"]],
+        Map[Function[test,
+          Switch[
+            test["status"],
+            "Success", Print["    ", esc["green"], "\[Checkmark] ", esc["gray"], test["title"], esc["reset"]],
+            "Failure", Print["    ", esc["red"], "\[Times] ", test["title"], esc["reset"]]]], #]
+      ] & /@ (getTestObject[#, "Failure" | "Success"] & /@ testResults)
+
+      Print["\n"];
+      Print["  ", esc["green"], successCount, " passing", esc["reset"], esc["gray"], StringTemplate[" (``ms)"][duration]];
+      If[failureCount > 0,
+        Print["  ", esc["red"], failureCount, " failing", esc["reset"], "\n"],
+        Print["\n"]
+      ];
+      CompoundExpression[
+        Print["    ", #["filetitle"]],
+        Print["      ", #["title"]],
+        Print["      ", esc["red"], "Verification Error: ", #["err"]["expected"], esc["reset"]];
+        Print["      ", esc["green"], "+ expected ", esc["red"], "- actual\n"];
+        Print["      - ", #["err"]["actualValue"], esc["green"]];
+        Print["      - ", #["err"]["expectedValue"], esc["reset"], "\n"];
+      ] & /@ Flatten[getTestObject[#, "Failure"] & /@ testResults];
+    ];
 
 If[KeyExistsQ[argsResult, "exit"],
   Switch[argsResult["exit"],
