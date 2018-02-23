@@ -169,11 +169,6 @@ outputSpec[testResults_] :=
       successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
       failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
 
-      tests = Flatten[getTestObject[#, "Failure" | "Success"] & /@ testResults];
-      failures = Flatten[getTestObject[#, "Failure"] & /@ testResults];
-
-      If[failureCount > 0, failures = Flatten[getTestObject[#, "Failure"] & /@ testResults]];
-
       CompoundExpression[
         Print["\n  ", First[#]["filetitle"]],
         Map[Function[test,
@@ -181,7 +176,7 @@ outputSpec[testResults_] :=
             test["status"],
             "Success", Print["    ", esc["green"], "\[Checkmark] ", esc["gray"], test["title"], esc["reset"]],
             "Failure", Print["    ", esc["red"], "\[Times] ", test["title"], esc["reset"]]]], #]
-      ] & /@ (getTestObject[#, "Failure" | "Success"] & /@ testResults)
+      ] & /@ (getTestObject[#, "Failure" | "Success"] & /@ testResults);
 
       Print["\n"];
       Print["  ", esc["green"], successCount, " passing", esc["reset"], esc["gray"], StringTemplate[" (``ms)"][duration]];
