@@ -194,6 +194,36 @@ outputSpec[testResults_] :=
       ] & /@ Flatten[getTestObject[#, "Failure"] & /@ testResults];
     ];
 
+outputTAP[testResults_] :=
+    Module[{successCount, failureCount, tests, totalCount},
+      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
+      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      totalCount = successCount + failureCount;
+
+      tests = Flatten[getTestObject[#, "Failure" | "Success"] & /@ testResults];
+
+      Print["1..", totalCount];
+
+      MapIndexed[
+        Print[
+          If[#1["status"] == "Success", "ok ", "not ok "],
+          First[#2], " ",
+          #1["filetitle"], " ", #1["title"],
+          If[#1["status"] == "Failure",
+            "\n# Verification Error: " <> #["err"]["expected"],
+            ""
+          ]
+        ] &,
+        tests
+      ];
+
+      Print["# tests ", totalCount];
+      Print["# pass ", successCount];
+      Print["# fail ", failureCount];
+      Print["# skip ", 0];
+
+    ];
+
 If[KeyExistsQ[argsResult, "exit"],
   Switch[argsResult["exit"],
     "version", Print[versionInfo[]]; Exit[];,
