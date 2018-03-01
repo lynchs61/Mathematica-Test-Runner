@@ -5,17 +5,17 @@ specified. If a directory is given, all files in the toplevel of the directory
 will attempt to be run.
 
     Usage: ./mathematica-test-runner [options] [targetFile|targetDirectory]
-    
+
     Options:
-    
+
       -V, --version              Output the version number
       -h, --help                 Output usage information
       -R, --reporter <reporter>  Specify a reporter to use. The default is 'spec'.
                                  Choose from one of the following options:
                                  {spec, tap, json, mathematica}.
-    
+
     Reporters:
-    
+
       'spec'        - The default reporter - simply outputs a nested view of the
                       high-level results, showing successes and fails and a short
                       summary at the end.
@@ -25,3 +25,23 @@ will attempt to be run.
                       corresponds to each TestReportObject.
       'tap'         - The TAP reporter emits lines for a Test-Anything-Protocol
                       consumer.
+
+## Examples
+To run the tests in the `test` directory:
+
+```
+$ ./mathematica-test-runner test
+```
+
+This will output the results with the default 'spec' reporter. A different reporter can be specified.
+
+```
+$ ./mathematica-test-runner -R tap test
+```
+
+You can also specify a single file instead of the entire test directory.
+
+```
+$ ./mathematica-test-runner test/test1.mt
+```
+
