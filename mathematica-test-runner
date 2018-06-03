@@ -226,7 +226,57 @@ outputTAP[testResults_] :=
     ];
 
 outputJUnit[testResults_] :=
-    Module[]
+    Module[{successCount, failureCount, tests, totalCount, duration,
+      testSuites, xml, xmlString},
+      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
+      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      totalCount = successCount + failureCount;
+      duration = QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults), "Seconds"];
+
+      testSuites = Map[
+        Function[{testReportAssoc},
+          XMLElement[
+            "testsuite",
+            {
+              "name" -> testReportAssoc["Title"],
+              "tests" -> ToString[testReportAssoc["TestsSucceededCount"] + testReportAssoc["TestsFailedCount"]],
+              "failures" -> ToString[testReportAssoc["TestsFailedCount"]],
+              "time" -> ToString[QuantityMagnitude[testReportAssoc["TimeElapsed"], "Seconds"]]
+            },
+            Map[Function[{testResult},
+              XMLElement["testcase",
+                {
+                  "name" -> ToString[testResult["TestID"]],
+                  "time" -> ToString[QuantityMagnitude[testResult["AbsoluteTimeUsed"]]]
+                },
+                If[
+                  StringMatchQ[testResult["Outcome"], "Failure"],
+                  {XMLElement["failure", {}, {
+                    XMLObject["CDATASection"][
+                      StringTemplate[
+                        "Verification Error: expected `` to equal ``"][ToString[testResult["ExpectedOutput"]], ToString[testResult["ActualOutput"]]]]}]},
+                  {}
+                ]]],
+              Values[testReportAssoc["TestResults"]]
+            ]
+          ]
+        ], testResults];
+
+      xml =
+          XMLObject["Document"][{XMLObject["Declaration"]["Version" -> "1.0", "Encoding" -> "UTF-8"]},
+            XMLElement["testsuites",
+              {
+                "name" -> "Mathematica Tests",
+                "time" -> ToString[QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults), "Seconds"]],
+                "tests" -> ToString[totalCount],
+                "failures" -> ToString[failureCount]
+              },
+              Prepend[testSuites, XMLElement["testsuite", {"name" -> "Root Suite", "tests" -> "0", "failures" -> "0", "time" -> "0"}, {}]]],
+            {}
+          ];
+
+      Print[ExportString[xml, "XML"]]
+    ]
 
 If[KeyExistsQ[argsResult, "exit"],
   Switch[argsResult["exit"],
