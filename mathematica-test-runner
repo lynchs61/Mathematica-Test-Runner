@@ -33,13 +33,14 @@ usage[] := StringTemplate["
                     corresponds to each TestReportObject.
     'tap'         - The TAP reporter emits lines for a Test-Anything-Protocol
                     consumer.
+    'junit'       - Results are given in the JUnit format
 "
 ][<|"name" -> $ScriptCommandLine[[1]], "reporters" -> possibleReporters|>];
 
 
 (* When adding a new reporter, be sure to add it to this list so it's handled
    correctly *)
-possibleReporters = {"spec", "tap", "json", "mathematica"};
+possibleReporters = {"spec", "tap", "json", "mathematica", "junit"};
 
 parseTarget[argv_, prevResult_] :=
     Module[{argList, result},
@@ -224,6 +225,9 @@ outputTAP[testResults_] :=
 
     ];
 
+outputJUnit[testResults_] :=
+    Module[]
+
 If[KeyExistsQ[argsResult, "exit"],
   Switch[argsResult["exit"],
     "version", Print[versionInfo[]]; Exit[];,
@@ -251,7 +255,8 @@ Module[{fileList, results},
     "mathematica", outputMathematica[results],
     "json", outputJSON[results],
     "tap", outputTAP[results],
-    "spec", outputSpec[results]
+    "spec", outputSpec[results],
+    "junit", outputJUnit[results]
   ];
 ]
 
