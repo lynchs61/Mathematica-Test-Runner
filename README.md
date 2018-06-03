@@ -25,6 +25,7 @@ will attempt to be run.
                       corresponds to each TestReportObject.
       'tap'         - The TAP reporter emits lines for a Test-Anything-Protocol
                       consumer.
+      'junit'       - Results are given in the JUnit format
 
 ## Examples
 To run the tests in the `test` directory:
@@ -207,3 +208,39 @@ The TAP reporter emits lines for a Test-Anything-Protocol consumer.
     # pass 3
     # fail 1
     # skip 0
+
+### junit
+The JUnit reporter gives the results as XML compatible with JUnit/XUnit reporters.
+
+    $ ./mathematica-test-runner -R junit test
+    <?xml version='1.0' encoding='UTF-8'?>
+    <testsuites name='Mathematica Tests'
+        time='0.49'
+        tests='4'
+        failures='1'>
+     <testsuite name='Root Suite'
+         tests='0'
+         failures='0'
+         time='0' />
+     <testsuite name='Test Report: test1.mt'
+         tests='2'
+         failures='0'
+         time='0.25'>
+      <testcase name='test1-1'
+          time='0.000148' />
+      <testcase name='test1-2'
+          time='0.000099' />
+     </testsuite>
+     <testsuite name='Test Report: test2.mt'
+         tests='2'
+         failures='1'
+         time='0.24'>
+      <testcase name='None'
+          time='0.000116'>
+       <failure><![CDATA[Verification Error: expected 2 to equal 3]]></failure>
+      </testcase>
+      <testcase name='None'
+          time='0.000109' />
+     </testsuite>
+    </testsuites>
+
