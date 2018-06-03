@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "version": "./node_modules/.bin/generic-package-version --regex \"^version\\s+=\\s+\\\"(\\d+\\.\\d+\\.\\d+(?:-\\d+)?)\\\";$\" --replacement \"version = \\\"__\\\";\" mathematica-test-runner"
+    "version": "./deploy.sh"
   },
   "repository": {
     "type": "git",
