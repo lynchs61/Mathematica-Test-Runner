@@ -1,6 +1,6 @@
 {
   "name": "@lynch-cc/mathematica-test-runner",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A test runner for Mathematica tests",
   "directories": {
     "doc": "doc",
