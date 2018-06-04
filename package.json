@@ -9,6 +9,7 @@
   "scripts": {
     "version": "./deploy.sh"
   },
+  "bin": "./mathematica-test-runner",
   "repository": {
     "type": "git",
     "url": "ssh://git@app00.prd.internal.lynch.cc:7999/infra/mathematica-test-runner.git"
