@@ -1,0 +1,29 @@
+{
+  "name": "@lynch-cc/mathematica-test-runner",
+  "version": "1.0.8",
+  "description": "A test runner for Mathematica tests",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "scripts": {
+    "version": "./deploy.sh"
+  },
+  "bin": "./mathematica-test-runner",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@app00.prd.internal.lynch.cc:7999/infra/mathematica-test-runner.git"
+  },
+  "keywords": [
+    "mathematica",
+    "testing",
+    "ci",
+    "devops"
+  ],
+  "author": "Sean Lynch",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@lynch-cc/es-software-index": "^1.1.10",
+    "@lynch-cc/generic-package-version": "^1.1.7"
+  }
+}
