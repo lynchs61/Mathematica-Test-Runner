@@ -12,9 +12,12 @@ GIT_BRANCH=$(git symbolic-ref --short -q HEAD)
 
 ./node_modules/.bin/es-soft create -s mathematica-test-runner -v ${PACKAGE_VERSION} -t mathematicaclitool
 
-git checkout github_deploy
-git checkout ${GIT_BRANCH} mathematica-test-runner README.md test
-git commit -m "Pulled in changes for deploying to Github"
-git merge --no-edit v${PACKAGE_VERSION}
-#git push origin github_deploy
-#git push github master
+#git checkout github_deploy
+#git checkout ${GIT_BRANCH} mathematica-test-runner README.md test
+#### THIS DOESN'T WORK BECAUSE THE COMMIT IS DONE AFTER
+#### Probably can clean this up with the 'postversion' command but it's not worth my time.
+#git add .
+#git commit -m "Pulled in changes for deploying to Github"
+#git merge --no-edit v${PACKAGE_VERSION}
+##git push origin github_deploy
+##git push github master
