@@ -14,4 +14,7 @@ GIT_BRANCH=$(git symbolic-ref --short -q HEAD)
 
 git checkout github_deploy
 git checkout ${GIT_BRANCH} mathematica-test-runner README.md test
-git status
+git merge v${PACKAGE_VERSION}
+git commit -m "Pulled in changes for deploying to Github"
+git push origin github_deploy
+git push github master
