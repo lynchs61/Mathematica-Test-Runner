@@ -16,5 +16,5 @@ git checkout github_deploy
 git checkout ${GIT_BRANCH} mathematica-test-runner README.md test
 git commit -m "Pulled in changes for deploying to Github"
 git merge --no-edit v${PACKAGE_VERSION}
-git push origin github_deploy
-git push github master
+#git push origin github_deploy
+#git push github master
