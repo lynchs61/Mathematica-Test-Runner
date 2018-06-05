@@ -5,6 +5,7 @@ GIT_BRANCH=$(git symbolic-ref --short -q HEAD)
 # Get all the commits into one, well described commit for pushing
 COMMITS=$(git log --oneline $(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)$/* \1/g')
 echo "$COMMITS"
+git checkout github_deploy
 git checkout ${GIT_BRANCH} mathematica-test-runner README.md test doc
 git add .
 git commit -m "$COMMITS"
