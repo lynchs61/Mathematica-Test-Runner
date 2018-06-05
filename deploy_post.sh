@@ -16,8 +16,17 @@ PACKAGE_VERSION=$(cat package.json \
   | awk -F: '{ print $2 }' \
   | sed 's/[",]//g')
 
+echo "##### Tagging repo"
 git tag ${PACKAGE_VERSION}
+
+echo "##### Pushing to origin"
 git push origin github_deploy --tags
+
+echo "##### Pulling github master"
 git pull github master
+
+echo "##### Pushing to github master"
 git push github master --tags
+
+echo "##### Checking out original branch"
 git checkout $GIT_BRANCH
