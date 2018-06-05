@@ -19,3 +19,4 @@ PACKAGE_VERSION=$(cat package.json \
 git tag ${PACKAGE_VERSION}
 git push origin github_deploy --tags
 git push github master --tags
+git checkout $GIT_BRANCH
