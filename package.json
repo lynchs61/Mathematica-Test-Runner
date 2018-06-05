@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "version": "./deploy.sh"
+    "version": "./deploy.sh",
+    "postversion": "./deploy_post.sh"
   },
   "bin": "./mathematica-test-runner",
   "repository": {

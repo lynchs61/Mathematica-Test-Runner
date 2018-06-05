@@ -8,8 +8,6 @@ PACKAGE_VERSION=$(cat package.json \
   | awk -F: '{ print $2 }' \
   | sed 's/[",]//g')
 
-GIT_BRANCH=$(git symbolic-ref --short -q HEAD)
-
 ./node_modules/.bin/es-soft create -s mathematica-test-runner -v ${PACKAGE_VERSION} -t mathematicaclitool
 
 #git checkout github_deploy
