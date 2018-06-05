@@ -7,7 +7,7 @@ COMMITS=$(git log --oneline $(git describe --tags --abbrev=0 @^)..@ | sed -E 's/
 echo "$COMMITS"
 git checkout github_deploy
 git checkout ${GIT_BRANCH} mathematica-test-runner README.md test doc
-git add .
+git add mathematica-test-runner README.md test doc
 git commit -m "$COMMITS"
 
 PACKAGE_VERSION=$(cat package.json \
@@ -23,7 +23,8 @@ echo "##### Pulling github master"
 git pull github master
 
 echo "##### Pushing to github master"
-git push github master --tags
+git push github master
+git push github ${PACKAGE_VERSION}
 
 echo "##### Checking out original branch"
 git checkout $GIT_BRANCH
