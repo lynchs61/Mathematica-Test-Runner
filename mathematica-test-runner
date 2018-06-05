@@ -6,7 +6,7 @@
 (* :Author: Sean Lynch *)
 (* :Date: 2018-01-19 *)
 
-version = "1.0.12";
+version = "1.0.13";
 
 versionInfo[] :=
     StringTemplate["Version: ``"][version];
