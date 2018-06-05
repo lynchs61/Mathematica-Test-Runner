@@ -7,8 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "version": "./deploy.sh",
-    "postversion": "./deploy_post.sh"
+    "test": "echo \"Currently no test specified\" && exit 0",
+    "version": "./node_modules/.bin/generic-package-version --regex \"^version\\s+=\\s+\\\"(\\d+\\.\\d+\\.\\d+(?:-\\d+)?)\\\";$\" --replacement \"version = \\\"__\\\";\" mathematica-test-runner"
   },
   "bin": "./mathematica-test-runner",
   "repository": {
