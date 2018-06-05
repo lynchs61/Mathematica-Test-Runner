@@ -7,14 +7,17 @@ COMMITS=$(git log --oneline $(git describe --tags --abbrev=0 @^)..@ | sed -E 's/
 echo "$COMMITS"
 git checkout github_deploy
 git checkout ${GIT_BRANCH} mathematica-test-runner README.md test doc package.json
-git add mathematica-test-runner README.md test doc
-git commit -m "$COMMITS"
 
 PACKAGE_VERSION=$(cat package.json \
   | grep version \
   | head -1 \
   | awk -F: '{ print $2 }' \
   | sed 's/[",]//g')
+
+
+git reset HEAD package.json
+rm -f package.json
+git commit -m "$COMMITS"
 
 echo "##### Tagging repo"
 git tag ${PACKAGE_VERSION}
