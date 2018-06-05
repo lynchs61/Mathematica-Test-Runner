@@ -23,7 +23,7 @@ echo "##### Pulling github master"
 git pull github master
 
 echo "##### Pushing to github master"
-git push github master
+git push github HEAD:master
 git push github ${PACKAGE_VERSION}
 
 echo "##### Checking out original branch"
