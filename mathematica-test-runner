@@ -1,12 +1,10 @@
 #!/usr/bin/env wolframscript
 
-(* Created by Mathematica Plugin for IntelliJ IDEA *)
-
 (* :Title: mathematica-test-runner *)
 (* :Author: Sean Lynch *)
 (* :Date: 2018-01-19 *)
 
-version = "1.0.8";
+version = "1.0.22";
 
 versionInfo[] :=
     StringTemplate["Version: ``"][version];

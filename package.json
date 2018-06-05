@@ -1,13 +1,14 @@
 {
   "name": "@lynch-cc/mathematica-test-runner",
-  "version": "1.0.8",
+  "version": "1.0.22",
   "description": "A test runner for Mathematica tests",
   "directories": {
     "doc": "doc",
     "test": "test"
   },
   "scripts": {
-    "version": "./deploy.sh"
+    "version": "./deploy.sh",
+    "postversion": "./deploy_post.sh"
   },
   "bin": "./mathematica-test-runner",
   "repository": {
