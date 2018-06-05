@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-npm publish
-
 GIT_BRANCH=$(git symbolic-ref --short -q HEAD)
 
 # Get all the commits into one, well described commit for pushing
