@@ -6,7 +6,7 @@ GIT_BRANCH=$(git symbolic-ref --short -q HEAD)
 COMMITS=$(git log --oneline $(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)$/* \1/g')
 echo "$COMMITS"
 git checkout github_deploy
-git checkout ${GIT_BRANCH} mathematica-test-runner README.md test doc
+git checkout ${GIT_BRANCH} mathematica-test-runner README.md test doc package.json
 git add mathematica-test-runner README.md test doc
 git commit -m "$COMMITS"
 
