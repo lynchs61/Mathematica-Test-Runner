@@ -19,9 +19,6 @@ PACKAGE_VERSION=$(cat package.json \
 echo "##### Tagging repo"
 git tag ${PACKAGE_VERSION}
 
-echo "##### Pushing to origin"
-git push origin github_deploy --tags
-
 echo "##### Pulling github master"
 git pull github master
 
