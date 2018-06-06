@@ -73,6 +73,17 @@ describe('Mathematica-Test-Runner', () => {
     })
   })
 
+  it('should handle output to a file', done => {
+    exec('./mathematica-test-runner -R junit -o ./junit_tmp/test.xml test', (error, stdout, stderr) => {
+      if (error) throw error
+      stdout.should.equal('')
+      fs.stat(path.join(__dirname, '../junit_tmp/test.xml'), (err, stat) => {
+        should.not.exist(err)
+        done()
+      })
+    })
+  })
+
   // This needs work to make it ... work. Needs a regex match because the time changes but that's a complicate multiline
   // regex
   // it('should produce the correct Spec output', done => {
