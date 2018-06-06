@@ -26,7 +26,7 @@ pipeline {
         success {
             script {
                 env.VERSION = sh (
-                        script: "npm version patch -m \"$env.ISSUE_KEY %s\"",
+                        script: "npm version patch -m \"$env.ISSUE_KEY %s\" | grep -Po \"v\\d+\\.\\d+\\.\\d+(?:-\\d+)?\"",
                         returnStdout: true
                 ).trim().replaceAll("v", "")
             }
