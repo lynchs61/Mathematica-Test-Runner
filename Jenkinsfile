@@ -33,7 +33,8 @@ pipeline {
             finalizeSuccess('mathematicaclitool', null, env.VERSION)
             script {
                 def commits = sh (
-                        script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'"
+                        script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
+                        returnStdout: true
                 ).trim()
                 sh "echo \"$commits\""
                 sh "git remote add github git@github.com:lynchs61/Mathematica-Test-Runner.git"
