@@ -20,9 +20,9 @@ pipeline {
         }
     }
     post {
-//        always {
-//            publishReports()
-//        }
+        always {
+            publishReports()
+        }
         success {
             script {
                 env.VERSION = sh (
