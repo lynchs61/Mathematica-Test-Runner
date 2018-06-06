@@ -32,14 +32,16 @@ pipeline {
             }
             finalizeSuccess('mathematicaclitool', null, env.VERSION)
             script {
+                def origBranch = env.GIT_LOCAL_BRANCH
                 def commits = sh (
                         script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
                         returnStdout: true
                 )
                 sh "echo \"$commits\""
                 sh "git remote add github git@github.com:lynchs61/Mathematica-Test-Runner.git"
+                sh "git fetch github"
                 sh "git checkout --track github/master"
-                sh "git checkout ${env.GIT_LOCAL_BRANCH} mathematica-test-runner README.md test doc"
+                sh "git checkout ${origBranch} mathematica-test-runner README.md test doc"
                 sh "git commit -m \"$commits\""
                 sh "git tag ${env.VERSION}"
                 sh "git pull"
