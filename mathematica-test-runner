@@ -14,11 +14,13 @@ usage[] := StringTemplate["
 
   Options:
 
-    -V, --version              Output the version number
-    -h, --help                 Output usage information
-    -R, --reporter <reporter>  Specify a reporter to use. The default is 'spec'.
-                               Choose from one of the following options:
-                               `reporters`.
+    -V, --version                Output the version number
+    -h, --help                   Output usage information
+    -R, --reporter <reporter>    Specify a reporter to use. The default is 'spec'.
+                                 Choose from one of the following options:
+                                 `reporters`.
+    -o, --outputfile <filepath>  The path to the output file to save the results. If
+                                 this is omitted the results will be sent to stdout.
 
   Reporters:
 

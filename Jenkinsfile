@@ -3,7 +3,7 @@
 pipeline {
     agent {
         node {
-            label 'npm-@lynch-cc && github'
+            label 'npm-@lynch-cc && mathematica'
         }
     }
     stages {
