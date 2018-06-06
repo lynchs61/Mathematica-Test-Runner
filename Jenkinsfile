@@ -33,7 +33,7 @@ pipeline {
             finalizeSuccess('mathematicaclitool', null, env.VERSION)
             script {
                 def origBranch = env.GIT_LOCAL_BRANCH
-                if (origBranch != 'master') {
+                if (origBranch != 'master' && env.BUILD_NUMBER > 1) {
                     def commits = sh(
                             script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
                             returnStdout: true
