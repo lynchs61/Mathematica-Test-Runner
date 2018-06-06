@@ -72,4 +72,16 @@ describe('Mathematica-Test-Runner', () => {
       done()
     })
   })
+
+  // This needs work to make it ... work. Needs a regex match because the time changes but that's a complicate multiline
+  // regex
+  // it('should produce the correct Spec output', done => {
+  //   const specText = fs.readFileSync(path.join(__dirname, './assets/expectedSpec.txt'), 'utf8')
+  //   const specMatch = new RegExp(specText)
+  //   exec('./mathematica-test-runner test', (error, stdout, stderr) => {
+  //     if (error) throw error
+  //     stdout.should.match(specMatch)
+  //     done()
+  //   })
+  // }).timeout(10000)
 })
