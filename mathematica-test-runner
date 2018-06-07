@@ -83,8 +83,8 @@ parseReporter[argv_, prevResult_] :=
       ]
     ]
 
-parseInitialState[argv_] :=
-    Module[{},
+parseOpts[argv_] :=
+    Module[{result},
       If[StringMatchQ[First[argv], "-*"],
         If[MatchQ[First[argv], "-h" | "--help"],
           <|"exit" -> "help"|>,
@@ -102,17 +102,20 @@ parseInitialState[argv_] :=
       ]
     ]
 
-parseOpts[scriptCommandLine_] :=
-    Module[{argList},
+parseOptsInitial[scriptCommandLine_] :=
+    Module[{argList, outPos},
       argList = Rest[scriptCommandLine];
       If[Length[argList] == 0,
         <|"exit" -> "help",
           "msg" -> "Must specify a target file or directory"|>,
-        parseInitialState[argList]
+        outPos = Position[argv, "-o" | "--outputfile"];
+        If[Length[outPos] == 0,
+          parseOpts[argList]
+        ]
       ]
     ]
 
-argsResult = parseOpts[$ScriptCommandLine];
+argsResult = parseOptsInitial[$ScriptCommandLine];
 
 getTestObject[testReportObject_, outcomePattern_] :=
     Module[{topTitle, results, tests},
