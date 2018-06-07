@@ -14,11 +14,13 @@ usage[] := StringTemplate["
 
   Options:
 
-    -V, --version              Output the version number
-    -h, --help                 Output usage information
-    -R, --reporter <reporter>  Specify a reporter to use. The default is 'spec'.
-                               Choose from one of the following options:
-                               `reporters`.
+    -V, --version                Output the version number
+    -h, --help                   Output usage information
+    -R, --reporter <reporter>    Specify a reporter to use. The default is 'spec'.
+                                 Choose from one of the following options:
+                                 `reporters`.
+    -o, --outputfile <filepath>  The path to the output file to save the results. If
+                                 this is omitted the results will be sent to stdout.
 
   Reporters:
 
@@ -81,8 +83,8 @@ parseReporter[argv_, prevResult_] :=
       ]
     ]
 
-parseInitialState[argv_] :=
-    Module[{},
+parseOpts[argv_] :=
+    Module[{result},
       If[StringMatchQ[First[argv], "-*"],
         If[MatchQ[First[argv], "-h" | "--help"],
           <|"exit" -> "help"|>,
@@ -100,17 +102,34 @@ parseInitialState[argv_] :=
       ]
     ]
 
-parseOpts[scriptCommandLine_] :=
-    Module[{argList},
+parseOptsInitial[scriptCommandLine_] :=
+
+    Module[{argList, outPos, outLocPos, outputPath, result},
       argList = Rest[scriptCommandLine];
       If[Length[argList] == 0,
-        <|"exit" -> "help",
-          "msg" -> "Must specify a target file or directory"|>,
-        parseInitialState[argList]
-      ]
+        result = <|"exit" -> "help",
+          "msg" -> "Must specify a target file or directory"|>;,
+        CompoundExpression[
+          outPos = Position[argList, "-o" | "--outputfile"],
+          If[Length[outPos] == 0,
+            result = parseOpts[argList];,
+            CompoundExpression[
+              If[Length[argList] < outPos[[1, 1]] + 1,
+                result = <|"exit" -> "help", "msg" -> "Must specify an output location when using the 'outputfile' switch"|>;,
+                CompoundExpression[
+                  outLocPos = MapAt[# + 1 &, outPos, {1, 1}],
+                  outputPath = First[Extract[argList, outLocPos]],
+                  result = parseOpts[Delete[argList, First /@ {outPos, outLocPos}]],
+                  result["output"] = outputPath]
+              ]
+            ]
+          ]
+        ]
+      ];
+      result
     ]
 
-argsResult = parseOpts[$ScriptCommandLine];
+argsResult = parseOptsInitial[$ScriptCommandLine];
 
 getTestObject[testReportObject_, outcomePattern_] :=
     Module[{topTitle, results, tests},

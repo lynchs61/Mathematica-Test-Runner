@@ -3,7 +3,7 @@
 pipeline {
     agent {
         node {
-            label 'npm-@lynch-cc && github'
+            label 'npm-@lynch-cc && mathematica'
         }
     }
     stages {
@@ -20,9 +20,9 @@ pipeline {
         }
     }
     post {
-//        always {
-//            publishReports()
-//        }
+        always {
+            publishReports()
+        }
         success {
             script {
                 env.VERSION = sh (
