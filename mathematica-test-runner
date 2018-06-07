@@ -167,19 +167,20 @@ outputJSON[testResults_] :=
       outputResults["tests"] = Flatten[getTestObject[#, "Success" | "Failure"] & /@ testResults];
       outputResults["passes"] = Flatten[getTestObject[#, "Success"] & /@ testResults];
       outputResults["failures"] = Flatten[getTestObject[#, "Failure"] & /@ testResults];
-      Print[ExportString[outputResults, "RawJSON"]];
+      ExportString[outputResults, "RawJSON"]
     ];
 
 outputMathematica[testResults_] :=
-    Print[ToString[InputForm[testResults]]];
+    ToString[InputForm[testResults]]
 
 outputSpec[testResults_] :=
-    Module[{successCount, failureCount, duration, esc, tests, failures},
+    Module[{result, successCount, failureCount, duration, esc, tests, failures},
+      result = {};
 
-    (*
-     * Colors for printing to the console
-     * See: https://mathematica.stackexchange.com/a/164487/90
-     *)
+      (*
+       * Colors for printing to the console
+       * See: https://mathematica.stackexchange.com/a/164487/90
+       *)
       esc = Association["reset" -> "\033[1;0m", "red" -> "\033[0;31m",
         "green" -> "\033[1;32m", "gray" -> "\033[0;37m"];
 
@@ -188,58 +189,62 @@ outputSpec[testResults_] :=
       failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
 
       CompoundExpression[
-        Print["\n  ", First[#]["filetitle"]],
+        AppendTo[result, {"\n  ", First[#]["filetitle"], "\n"}],
         Map[Function[test,
           Switch[
             test["status"],
-            "Success", Print["    ", esc["green"], "\[Checkmark] ", esc["gray"], test["title"], esc["reset"]],
-            "Failure", Print["    ", esc["red"], "\[Times] ", test["title"], esc["reset"]]]], #]
+            "Success", AppendTo[result, {"    ", esc["green"], "\[Checkmark] ", esc["gray"], test["title"], esc["reset"], "\n"}],
+            "Failure", AppendTo[result, {"    ", esc["red"], "\[Times] ", test["title"], esc["reset"], "\n"}]]], #]
       ] & /@ (getTestObject[#, "Failure" | "Success"] & /@ testResults);
 
-      Print["\n"];
-      Print["  ", esc["green"], successCount, " passing", esc["reset"], esc["gray"], StringTemplate[" (``ms)"][duration]];
+      AppendTo[result, "\n"];
+      AppendTo[result, {"  ", esc["green"], successCount, " passing", esc["reset"], esc["gray"], StringTemplate[" (``ms)"][duration], "\n"}];
       If[failureCount > 0,
-        Print["  ", esc["red"], failureCount, " failing", esc["reset"], "\n"],
-        Print["\n"]
+        AppendTo[result, {"  ", esc["red"], failureCount, " failing", esc["reset"], "\n"}],
+        AppendTo[result, {"\n"}]
       ];
       CompoundExpression[
-        Print["    ", #["filetitle"]],
-        Print["      ", #["title"]],
-        Print["      ", esc["red"], "Verification Error: ", #["err"]["expected"], esc["reset"]];
-        Print["      ", esc["green"], "+ expected ", esc["red"], "- actual\n"];
-        Print["      - ", #["err"]["actualValue"], esc["green"]];
-        Print["      - ", #["err"]["expectedValue"], esc["reset"], "\n"];
+        AppendTo[result, {"    ", #["filetitle"], "\n"}],
+        AppendTo[result, {"      ", #["title"], "\n"}],
+        AppendTo[result, {"      ", esc["red"], "Verification Error: ", #["err"]["expected"], esc["reset"], "\n"}];
+        AppendTo[result, {"      ", esc["green"], "+ expected ", esc["red"], "- actual\n"}];
+        AppendTo[result, {"      - ", #["err"]["actualValue"], esc["green"], "\n"}];
+        AppendTo[result, {"      - ", #["err"]["expectedValue"], esc["reset"], "\n"}];
       ] & /@ Flatten[getTestObject[#, "Failure"] & /@ testResults];
+      StringJoin[ToString /@ Flatten[result]]
     ];
 
 outputTAP[testResults_] :=
-    Module[{successCount, failureCount, tests, totalCount},
+    Module[{result, successCount, failureCount, tests, totalCount},
+      result = {};
       successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
       failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
       totalCount = successCount + failureCount;
 
       tests = Flatten[getTestObject[#, "Failure" | "Success"] & /@ testResults];
 
-      Print["1..", totalCount];
+      AppendTo[result, {"1..", totalCount, "\n"}];
 
       MapIndexed[
-        Print[
+        AppendTo[result, {
           If[#1["status"] == "Success", "ok ", "not ok "],
           First[#2], " ",
           #1["filetitle"], " ", #1["title"],
           If[#1["status"] == "Failure",
             "\n# Verification Error: " <> #["err"]["expected"],
             ""
-          ]
-        ] &,
+          ],
+          "\n"
+        }] &,
         tests
       ];
 
-      Print["# tests ", totalCount];
-      Print["# pass ", successCount];
-      Print["# fail ", failureCount];
-      Print["# skip ", 0];
+      AppendTo[result, {"# tests ", totalCount, "\n"}];
+      AppendTo[result, {"# pass ", successCount, "\n"}];
+      AppendTo[result, {"# fail ", failureCount, "\n"}];
+      AppendTo[result, {"# skip ", 0}];
 
+      StringJoin[ToString /@ Flatten[result]]
     ];
 
 outputJUnit[testResults_] :=
@@ -292,7 +297,7 @@ outputJUnit[testResults_] :=
             {}
           ];
 
-      Print[ExportString[xml, "XML"]]
+      ExportString[xml, "XML"]
     ]
 
 If[KeyExistsQ[argsResult, "exit"],
@@ -302,7 +307,7 @@ If[KeyExistsQ[argsResult, "exit"],
   ];
 ];
 
-Module[{fileList, results},
+Module[{fileList, testResults, reporterResults},
   fileList = {};
 
   fileList = FileNames["*", argsResult["target"], IgnoreCase -> True];
@@ -316,15 +321,21 @@ Module[{fileList, results},
     Print[StringTemplate["The target '``' is neither a directory with test files, nor an individual test file."][argsResult["target"]]]; Exit[]
   ];
 
-  results = TestReport /@ fileList;
+  testResults = TestReport /@ fileList;
 
-  Switch[argsResult["reporter"],
-    "mathematica", outputMathematica[results],
-    "json", outputJSON[results],
-    "tap", outputTAP[results],
-    "spec", outputSpec[results],
-    "junit", outputJUnit[results]
-  ];
+  reporterResults =
+      Switch[argsResult["reporter"],
+        "mathematica", outputMathematica[testResults],
+        "json", outputJSON[testResults],
+        "tap", outputTAP[testResults],
+        "spec", outputSpec[testResults],
+        "junit", outputJUnit[testResults]
+      ];
+
+  If[KeyExistsQ[argsResult, "output"],
+    Print["Not Yet"],
+    Print[reporterResults]
+  ]
 ]
 
 
