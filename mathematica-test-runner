@@ -4,6 +4,8 @@
 (* :Author: Sean Lynch *)
 (* :Date: 2018-01-19 *)
 
+(*Print[$ScriptCommandLine];*)
+
 version = "1.0.30";
 
 versionInfo[] :=
@@ -333,7 +335,16 @@ Module[{fileList, testResults, reporterResults},
       ];
 
   If[KeyExistsQ[argsResult, "output"],
-    Print["Not Yet"],
+    Module[{outputFilePath, directory, stream},
+      outputFilePath = ExpandFileName[argsResult["output"]];
+      directory = DirectoryName[outputFilePath];
+      If[!DirectoryQ[directory],
+        CreateDirectory[directory];
+      ];
+      stream = OpenWrite[outputFilePath];
+      WriteString[stream, reporterResults, "\n"];
+      Close[stream];
+    ],
     Print[reporterResults]
   ]
 ]

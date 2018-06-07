@@ -103,6 +103,21 @@ describe('Mathematica-Test-Runner', () => {
         done()
       })
     }).timeout(timeout)
+
+    it('should produce the correct Spec output to a file', done => {
+      exec('./mathematica-test-runner -o ./junit_tmp/test.txt test', (error, stdout, stderr) => {
+        if (error) throw error
+        stdout.should.equal('')
+        const filePath = path.join(__dirname, '../junit_tmp/test.txt')
+        fs.stat(filePath, (err, stat) => {
+          should.not.exist(err)
+          fs.readFile(filePath, 'utf8', (err, data) => {
+            data.should.match(specMatchRegex)
+            done()
+          })
+        })
+      })
+    }).timeout(timeout)
   })
 
   describe('Tap Reporter', () => {
@@ -127,12 +142,16 @@ ok 4 Test Report: test2.mt None
     }).timeout(timeout)
 
     it('should produce the correct Tap output to a file', done => {
-      exec('./mathematica-test-runner -R tap -o ./junit_tmp/test.xml test', (error, stdout, stderr) => {
+      exec('./mathematica-test-runner -R tap -o ./junit_tmp/test.tap test', (error, stdout, stderr) => {
         if (error) throw error
         stdout.should.equal('')
-        fs.stat(path.join(__dirname, '../junit_tmp/test.xml'), (err, stat) => {
+        const filePath = path.join(__dirname, '../junit_tmp/test.tap')
+        fs.stat(filePath, (err, stat) => {
           should.not.exist(err)
-          done()
+          fs.readFile(filePath, 'utf8', (err, data) => {
+            data.should.equal(expected)
+            done()
+          })
         })
       })
     }).timeout(timeout)
@@ -239,6 +258,21 @@ ok 4 Test Report: test2.mt None
         done()
       })
     }).timeout(timeout)
+
+    it('should produce the correct JSON output to a file', done => {
+      exec('./mathematica-test-runner -R json -o ./junit_tmp/test.json test', (error, stdout, stderr) => {
+        if (error) throw error
+        stdout.should.equal('')
+        const filePath = path.join(__dirname, '../junit_tmp/test.json')
+        fs.stat(filePath, (err, stat) => {
+          should.not.exist(err)
+          fs.readFile(filePath, 'utf8', (err, data) => {
+            data.should.match(JSONMatchRegex)
+            done()
+          })
+        })
+      })
+    }).timeout(timeout)
   })
 
   describe('JUnit Reporter', () => {
@@ -281,6 +315,21 @@ ok 4 Test Report: test2.mt None
         if (error) throw error
         stdout.should.match(JUnitMatchRegex)
         done()
+      })
+    }).timeout(timeout)
+
+    it('should produce the correct JSON output to a file', done => {
+      exec('./mathematica-test-runner -R junit -o ./junit_tmp/test.xml test', (error, stdout, stderr) => {
+        if (error) throw error
+        stdout.should.equal('')
+        const filePath = path.join(__dirname, '../junit_tmp/test.xml')
+        fs.stat(filePath, (err, stat) => {
+          should.not.exist(err)
+          fs.readFile(filePath, 'utf8', (err, data) => {
+            data.should.match(JUnitMatchRegex)
+            done()
+          })
+        })
       })
     }).timeout(timeout)
   })
