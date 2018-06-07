@@ -73,17 +73,17 @@ describe('Mathematica-Test-Runner', () => {
       done()
     })
   }).timeout(timeout)
-  //
-  // it('should handle output to a file', done => {
-  //   exec('./mathematica-test-runner -R junit -o ./junit_tmp/test.xml test', (error, stdout, stderr) => {
-  //     if (error) throw error
-  //     stdout.should.equal('')
-  //     fs.stat(path.join(__dirname, '../junit_tmp/test.xml'), (err, stat) => {
-  //       should.not.exist(err)
-  //       done()
-  //     })
-  //   })
-  // })
+
+  it('should handle output to a file', done => {
+    exec('./mathematica-test-runner -R junit -o ./junit_tmp/test.xml test', (error, stdout, stderr) => {
+      if (error) throw error
+      stdout.should.equal('')
+      fs.stat(path.join(__dirname, '../junit_tmp/test.xml'), (err, stat) => {
+        should.not.exist(err)
+        done()
+      })
+    })
+  }).timeout(timeout)
 
   it('should produce the correct Spec output', done => {
     const g = '\\[1;32m'

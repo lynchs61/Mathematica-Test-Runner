@@ -103,16 +103,30 @@ parseOpts[argv_] :=
     ]
 
 parseOptsInitial[scriptCommandLine_] :=
-    Module[{argList, outPos},
+
+    Module[{argList, outPos, outLocPos, outputPath, result},
       argList = Rest[scriptCommandLine];
       If[Length[argList] == 0,
-        <|"exit" -> "help",
-          "msg" -> "Must specify a target file or directory"|>,
-        outPos = Position[argv, "-o" | "--outputfile"];
-        If[Length[outPos] == 0,
-          parseOpts[argList]
+        result = <|"exit" -> "help",
+          "msg" -> "Must specify a target file or directory"|>;,
+        CompoundExpression[
+          outPos = Position[argList, "-o" | "--outputfile"],
+          If[Length[outPos] == 0,
+            result = parseOpts[argList];,
+            CompoundExpression[
+              If[Length[argList] < outPos[[1, 1]] + 1,
+                result = <|"exit" -> "help", "msg" -> "Must specify an output location when using the 'outputfile' switch"|>;,
+                CompoundExpression[
+                  outLocPos = MapAt[# + 1 &, outPos, {1, 1}],
+                  outputPath = First[Extract[argList, outLocPos]],
+                  result = parseOpts[Delete[argList, First /@ {outPos, outLocPos}]],
+                  result["output"] = outputPath]
+              ]
+            ]
+          ]
         ]
-      ]
+      ];
+      result
     ]
 
 argsResult = parseOptsInitial[$ScriptCommandLine];
