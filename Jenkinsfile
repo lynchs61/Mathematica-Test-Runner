@@ -15,6 +15,7 @@ pipeline {
             }
         }
         stage('TestOutput') {
+            when { not { branch 'master' } }
             steps {
                 sh 'npm run testOutput1'
                 sh 'npm run testOutput2'
