@@ -3,24 +3,49 @@
 pipeline {
     agent {
         node {
-            label 'npm-@lynch-cc && mathematica'
+            label 'math10'
         }
     }
     stages {
-        stage('Initial') {
+        stage('TestArgs') {
+            agent {
+                node {
+                    label 'math10'
+                }
+            }
             steps {
                 initialSetup()
                 sh 'npm install'
+                sh 'npm run testArgs'
             }
         }
-        stage('Test') {
-            steps {
-                sh 'npm test'
+        stage('TestOutput') {
+            parallel {
+                stage('TestOutput1') {
+                    steps {
+                        sh 'npm run testOutput1'
+                    }
+                }
+                stage('TestOutput2') {
+                    agent {
+                        node {
+                            label 'math11'
+                        }
+                    }
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run testOutput2'
+                        stash includes: 'junit/*.xml', name: 'math11Junit'
+                    }
+                }
             }
         }
     }
     post {
         always {
+            sh 'ls -la junit'
+            unstash 'math11Junit'
+            sh 'ls -la junit'
             publishReports()
         }
         success {
