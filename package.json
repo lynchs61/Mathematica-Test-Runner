@@ -1,13 +1,15 @@
 {
   "name": "@lynch-cc/mathematica-test-runner",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "A test runner for Mathematica tests",
   "directories": {
     "doc": "doc",
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Currently no test specified\" && exit 0",
+    "testArgs": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testArgs.xml unitTest/testArgs.js",
+    "testOutput1": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testOutput1.xml unitTest/testOutput1.js",
+    "testOutput2": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testOutput2.xml unitTest/testOutput2.js",
     "version": "./node_modules/.bin/generic-package-version --regex \"^version\\s+=\\s+\\\"(\\d+\\.\\d+\\.\\d+(?:-\\d+)?)\\\";$\" --replacement \"version = \\\"__\\\";\" mathematica-test-runner"
   },
   "bin": "./mathematica-test-runner",
@@ -23,8 +25,11 @@
   ],
   "author": "Sean Lynch",
   "license": "UNLICENSED",
-  "dependencies": {
+  "devDependencies": {
     "@lynch-cc/es-software-index": "^1.1.10",
-    "@lynch-cc/generic-package-version": "^1.1.7"
+    "@lynch-cc/generic-package-version": "^1.1.7",
+    "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^1.17.0",
+    "should": "^13.2.1"
   }
 }

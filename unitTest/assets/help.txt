@@ -1,0 +1,26 @@
+
+  Usage: ./mathematica-test-runner [options] [targetFile|targetDirectory]
+
+  Options:
+
+    -V, --version                Output the version number
+    -h, --help                   Output usage information
+    -R, --reporter <reporter>    Specify a reporter to use. The default is 'spec'.
+                                 Choose from one of the following options:
+                                 {spec, tap, json, mathematica, junit}.
+    -o, --outputfile <filepath>  The path to the output file to save the results. If
+                                 this is omitted the results will be sent to stdout.
+
+  Reporters:
+
+    'spec'        - The default reporter - simply outputs a nested view of the
+                    high-level results, showing successes and fails and a short
+                    summary at the end.
+    'mathematica' - Output the results exactly as they come from the Mathematica
+                    front-end.
+    'json'        - The results are given as a single JSON object that
+                    corresponds to each TestReportObject.
+    'tap'         - The TAP reporter emits lines for a Test-Anything-Protocol
+                    consumer.
+    'junit'       - Results are given in the JUnit format
+

@@ -3,40 +3,44 @@
 pipeline {
     agent {
         node {
-            label 'npm-@lynch-cc && github'
+            label 'mathematica && npm-@lynch-cc'
         }
     }
     stages {
-        stage('Initial') {
+        stage('TestArgs') {
             steps {
                 initialSetup()
                 sh 'npm install'
+                sh 'npm run testArgs'
             }
         }
-        stage('Test') {
+        stage('TestOutput') {
+            when { not { branch 'master' } }
             steps {
-                sh 'npm test'
+                sh 'npm run testOutput1'
+                sh 'npm run testOutput2'
             }
         }
     }
     post {
-//        always {
-//            publishReports()
-//        }
+        always {
+            publishReports()
+        }
         success {
             script {
                 env.VERSION = sh (
-                        script: "npm version patch -m \"$env.ISSUE_KEY %s\" | grep -Po \"v\\d+\\.\\d+\\.\\d+(?:-\\d+)?\"",
-                        returnStdout: true
+                    script: "npm version patch -m \"$env.ISSUE_KEY %s\" | grep -Po \"v\\d+\\.\\d+\\.\\d+(?:-\\d+)?\"",
+                    returnStdout: true
                 ).trim().replaceAll("v", "")
             }
             finalizeSuccess('mathematicaclitool', null, env.VERSION)
             script {
                 def origBranch = env.GIT_LOCAL_BRANCH
-                if (origBranch != 'master') {
+                def buildNumber = env.BUILD_NUMBER as Integer
+                if (origBranch != 'master' && buildNumber > 1) {
                     def commits = sh(
-                            script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
-                            returnStdout: true
+                        script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
+                        returnStdout: true
                     )
                     sh "echo \"$commits\""
                     sh "git remote add github git@github.com:lynchs61/Mathematica-Test-Runner.git"

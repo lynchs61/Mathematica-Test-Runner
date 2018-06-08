@@ -8,11 +8,14 @@ will attempt to be run.
 
     Options:
 
-      -V, --version              Output the version number
-      -h, --help                 Output usage information
-      -R, --reporter <reporter>  Specify a reporter to use. The default is 'spec'.
-                                 Choose from one of the following options:
-                                 {spec, tap, json, mathematica}.
+      -V, --version                Output the version number
+      -h, --help                   Output usage information
+      -R, --reporter <reporter>    Specify a reporter to use. The default is 'spec'.
+                                   Choose from one of the following options:
+                                   {spec, tap, json, mathematica, junit}.
+      -o, --outputfile <filepath>  The path to the output file to save the results. If
+                                   this is omitted the results will be sent to stdout.
+
 
     Reporters:
 

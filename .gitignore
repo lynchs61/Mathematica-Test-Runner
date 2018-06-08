@@ -3,3 +3,6 @@
 .idea
 *.iml
 node_modules
+junit
+junit_tmp
+
