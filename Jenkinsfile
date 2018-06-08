@@ -3,16 +3,11 @@
 pipeline {
     agent {
         node {
-            label 'math10'
+            label 'mathematica && npm-@lynch-cc'
         }
     }
     stages {
         stage('TestArgs') {
-            agent {
-                node {
-                    label 'math10'
-                }
-            }
             steps {
                 initialSetup()
                 sh 'npm install'
@@ -22,20 +17,27 @@ pipeline {
         stage('TestOutput') {
             parallel {
                 stage('TestOutput1') {
+                    agent {
+                        node {
+                            label 'mathematica && npm-@lynch-cc'
+                        }
+                    }
                     steps {
+                        sh 'npm install'
                         sh 'npm run testOutput1'
+                        stash includes: 'junit/*.xml', name: 'math1Junit'
                     }
                 }
                 stage('TestOutput2') {
                     agent {
                         node {
-                            label 'math11'
+                            label 'mathematica && npm-@lynch-cc'
                         }
                     }
                     steps {
                         sh 'npm install'
                         sh 'npm run testOutput2'
-                        stash includes: 'junit/*.xml', name: 'math11Junit'
+                        stash includes: 'junit/*.xml', name: 'math2Junit'
                     }
                 }
             }
@@ -44,15 +46,16 @@ pipeline {
     post {
         always {
             sh 'ls -la junit'
-            unstash 'math11Junit'
+            unstash 'math1Junit'
+            unstash 'math2Junit'
             sh 'ls -la junit'
             publishReports()
         }
         success {
             script {
                 env.VERSION = sh (
-                        script: "npm version patch -m \"$env.ISSUE_KEY %s\" | grep -Po \"v\\d+\\.\\d+\\.\\d+(?:-\\d+)?\"",
-                        returnStdout: true
+                    script: "npm version patch -m \"$env.ISSUE_KEY %s\" | grep -Po \"v\\d+\\.\\d+\\.\\d+(?:-\\d+)?\"",
+                    returnStdout: true
                 ).trim().replaceAll("v", "")
             }
             finalizeSuccess('mathematicaclitool', null, env.VERSION)
@@ -60,8 +63,8 @@ pipeline {
                 def origBranch = env.GIT_LOCAL_BRANCH
                 if (origBranch != 'master' && env.BUILD_NUMBER > 1) {
                     def commits = sh(
-                            script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
-                            returnStdout: true
+                        script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
+                        returnStdout: true
                     )
                     sh "echo \"$commits\""
                     sh "git remote add github git@github.com:lynchs61/Mathematica-Test-Runner.git"
