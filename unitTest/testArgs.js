@@ -81,11 +81,11 @@ describe('Mathematica-Test-Runner', () => {
     const d = '\\[1;0m'
     /* eslint-disable no-useless-escape */
     const specMatchString = `\\s+Test Report: test1\.mt\\n\
-\\s+.${g}. .${gr}test1-1.${d}\\n\
-\\s+.${g}. .${gr}test1-2.${d}\\n\
+\\s+.${g}(?:.|\\\\\\[Checkmark\\]) .${gr}test1-1.${d}\\n\
+\\s+.${g}(?:.|\\\\\\[Checkmark\\]) .${gr}test1-2.${d}\\n\
 \\s+Test Report: test2\.mt\\n\
 \\s+.${r}. None.${d}\\n\
-\\s+.${g}. .${gr}None.${d}\\n\
+\\s+.${g}(?:.|\\\\\\[Checkmark\\]) .${gr}None.${d}\\n\
 \\s+.${g}3 passing.${d}.${gr} \\(\\d+ms\\)\\n\
 \\s+.${r}1 failing.${d}\\n\
 \\s+Test Report: test2\.mt\\n\
