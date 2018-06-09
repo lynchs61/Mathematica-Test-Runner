@@ -15,7 +15,8 @@ will attempt to be run.
                                    {spec, tap, json, mathematica, junit}.
       -o, --outputfile <filepath>  The path to the output file to save the results. If
                                    this is omitted the results will be sent to stdout.
-
+      -m, --failmissingmsg         Whether or not to fail the test if the expected
+                                   message is missing.
 
     Reporters:
 
