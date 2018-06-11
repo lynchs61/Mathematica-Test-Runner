@@ -9,7 +9,4 @@ VerificationTest[(* 1 *)
 
 VerificationTest[Cos[2 Pi], 1];
 
-VerificationTest[{}[[1]], {}[[1]], TestID -> "TestMissingMessage"];
-VerificationTest[{}[[1]], {}[[1]], {Part::partw}, TestID -> "TestWithCorrectMessage"];
-
 EndTestSection[]
