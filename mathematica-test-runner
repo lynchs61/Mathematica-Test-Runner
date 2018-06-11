@@ -117,7 +117,7 @@ parseOptsInitial[scriptCommandLine_] :=
         ];
 
         outPos = Position[argList, "-o" | "--outputfile"];
-        failMissingPos = Position[argList, "-m" | "--failmissingmsg"];
+        failMissingPos = Position[argList, "-f" | "--failmissingmsg"];
 
         If[Length[outPos] != 0,
           If[Length[argList] < outPos[[1, 1]] + 1,

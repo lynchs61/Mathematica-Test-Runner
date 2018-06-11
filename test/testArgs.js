@@ -25,7 +25,7 @@ describe('Mathematica-Test-Runner', () => {
   it('should handle bogus args', done => {
     exec('./mathematica-test-runner -f --foo -b --bar', (error, stdout, stderr) => {
       if (error) throw error
-      stdout.split('\n')[0].should.equal('Invalid option \'-f\'')
+      stdout.split('\n')[0].should.equal('Invalid option \'--foo\'')
       done()
     })
   }).timeout(timeout)
