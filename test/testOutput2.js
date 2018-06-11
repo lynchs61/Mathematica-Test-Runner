@@ -10,11 +10,10 @@ const exec = require('child_process').exec
 const fs = require('fs')
 const path = require('path')
 
-let version = require(path.join(__dirname, '../package.json')).version
 const timeout = 60000
 
 describe('Mathematica-Test-Runner', () => {
-    describe('JSON Reporter', () => {
+  describe('JSON Reporter', () => {
     const float = '[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?'
     const JSONMatchString = `{
 \\s+"stats":{\
@@ -109,7 +108,7 @@ describe('Mathematica-Test-Runner', () => {
 
     const JSONMatchRegex = new RegExp(JSONMatchString)
     it('should produce the correct JSON output to stdout', done => {
-      exec('./mathematica-test-runner -R json test', (error, stdout, stderr) => {
+      exec('./mathematica-test-runner -R json ./mathematicaTests/test', (error, stdout, stderr) => {
         if (error) throw error
         stdout.should.match(JSONMatchRegex)
         done()
@@ -117,7 +116,7 @@ describe('Mathematica-Test-Runner', () => {
     }).timeout(10 * timeout)
 
     it('should produce the correct JSON output to a file', done => {
-      exec('./mathematica-test-runner -R json -o ./junit_tmp/test.json test', (error, stdout, stderr) => {
+      exec('./mathematica-test-runner -R json -o ./junit_tmp/test.json ./mathematicaTests/test', (error, stdout, stderr) => {
         if (error) throw error
         stdout.should.equal('')
         const filePath = path.join(__dirname, '../junit_tmp/test.json')
@@ -167,16 +166,16 @@ describe('Mathematica-Test-Runner', () => {
 `
 
     const JUnitMatchRegex = new RegExp(JUnitMatchString)
-    it('should produce the correct JSON output to stdout', done => {
-      exec('./mathematica-test-runner -R junit test', (error, stdout, stderr) => {
+    it('should produce the correct JUnit output to stdout', done => {
+      exec('./mathematica-test-runner -R junit ./mathematicaTests/test', (error, stdout, stderr) => {
         if (error) throw error
         stdout.should.match(JUnitMatchRegex)
         done()
       })
     }).timeout(10 * timeout)
 
-    it('should produce the correct JSON output to a file', done => {
-      exec('./mathematica-test-runner -R junit -o ./junit_tmp/test.xml test', (error, stdout, stderr) => {
+    it('should produce the correct JUnit output to a file', done => {
+      exec('./mathematica-test-runner -R junit -o ./junit_tmp/test.xml ./mathematicaTests/test', (error, stdout, stderr) => {
         if (error) throw error
         stdout.should.equal('')
         const filePath = path.join(__dirname, '../junit_tmp/test.xml')
