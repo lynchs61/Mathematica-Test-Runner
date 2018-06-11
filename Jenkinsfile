@@ -21,6 +21,12 @@ pipeline {
                 sh 'npm run testOutput2'
             }
         }
+        stage('TestMessageHandling') {
+            when { not { branch 'master' } }
+            steps {
+                sh 'npm run testMessageHandling'
+            }
+        }
     }
     post {
         always {
