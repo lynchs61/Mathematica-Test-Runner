@@ -62,11 +62,11 @@ describe('Mathematica-Test-Runner', () => {
 
   describe('Tap Reporter', () => {
     const expected = `1..4
-ok 1 Test Report: test1.mt test1-1
-ok 2 Test Report: test1.mt test1-2
-not ok 3 Test Report: test2.mt None
+ok 1 - Test Report: test1.mt test1-1
+ok 2 - Test Report: test1.mt test1-2
+not ok 3 - Test Report: test2.mt None
 # Verification Error: expected 2 to equal 3
-ok 4 Test Report: test2.mt None
+ok 4 - Test Report: test2.mt None
 # tests 4
 # pass 3
 # fail 1
