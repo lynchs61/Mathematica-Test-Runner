@@ -160,11 +160,13 @@ getTestObject[testReportObject_, outcomePattern_] :=
           "duration" -> N[QuantityMagnitude[#["AbsoluteTimeUsed"], "Milliseconds"]],
           "status" -> #["Outcome"],
           "err" ->
-              If[#["Outcome"] == "Failure",
+              If[StringMatchQ[#["Outcome"], If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]],
                 <|"expected" -> StringTemplate["expected `` to equal ``"][ToString[#["ExpectedOutput"]], ToString[#["ActualOutput"]]],
                   "expectedValue" -> ToString[#["ExpectedOutput"]],
                   "actualValue" -> ToString[#["ActualOutput"]],
-                  "expectedMessages" -> StringTemplate["expected `` to equal ``"][ToString[#["ExpectedMessages"]], ToString[#["ActualMessages"]]]|>,
+                  "expectedMsg" -> StringTemplate["expected `` to be ``"][ToString[#["ExpectedMessages"]], ToString[#["ActualMessages"]]],
+                  "expectedMessages" -> ToString[#["ExpectedMessages"]],
+                  "actualMessages" -> ToString[#["ActualMessages"]]|>,
                 <||>
               ]
         |>, {}] & /@ results
@@ -203,8 +205,13 @@ outputSpec[testResults_] :=
         "green" -> "\033[1;32m", "gray" -> "\033[0;37m"];
 
       duration = getTotalDurationInMS[testResults];
-      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
-      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      If[argsResult["ignoremessages"],
+        successCount = Plus @@ (#["TestsSucceededCount"] + #["TestsFailedWithMessagesCount"] & /@ testResults);
+        failureCount = Plus @@ (#["TestsFailedCount"] - #["TestsFailedWithMessagesCount"] & /@ testResults);
+        ,
+        successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
+        failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      ];
 
       CompoundExpression[
         AppendTo[result, {"\n  ", First[#]["filetitle"], "\n"}],
@@ -212,8 +219,14 @@ outputSpec[testResults_] :=
           Switch[
             test["status"],
             "Success", AppendTo[result, {"    ", esc["green"], "\[Checkmark] ", esc["gray"], test["title"], esc["reset"], "\n"}],
-            "Failure", AppendTo[result, {"    ", esc["red"], "\[Times] ", test["title"], esc["reset"], "\n"}]]], #]
-      ] & /@ (getTestObject[#, "Failure" | "Success"] & /@ testResults);
+            "Failure", AppendTo[result, {"    ", esc["red"], "\[Times] ", test["title"], esc["reset"], "\n"}],
+            "MessagesFailure",
+            If[argsResult["ignoremessages"],
+              AppendTo[result, {"    ", esc["green"], "\[Checkmark] ", esc["gray"], test["title"], esc["reset"], "\n"}],
+              AppendTo[result, {"    ", esc["red"], "\[Times] ", test["title"], esc["reset"], "\n"}]
+            ]
+          ]], #]
+      ] & /@ (getTestObject[#, "Failure" | "Success" | "MessagesFailure"] & /@ testResults);
 
       AppendTo[result, "\n"];
       AppendTo[result, {"  ", esc["green"], successCount, " passing", esc["reset"], esc["gray"], StringTemplate[" (``ms)"][duration], "\n"}];
@@ -224,11 +237,23 @@ outputSpec[testResults_] :=
       CompoundExpression[
         AppendTo[result, {"    ", #["filetitle"], "\n"}],
         AppendTo[result, {"      ", #["title"], "\n"}],
-        AppendTo[result, {"      ", esc["red"], "Verification Error: ", #["err"]["expected"], esc["reset"], "\n"}];
-        AppendTo[result, {"      ", esc["green"], "+ expected ", esc["red"], "- actual\n"}];
-        AppendTo[result, {"      - ", #["err"]["actualValue"], esc["green"], "\n"}];
-        AppendTo[result, {"      - ", #["err"]["expectedValue"], esc["reset"], "\n"}];
-      ] & /@ Flatten[getTestObject[#, "Failure"] & /@ testResults];
+        Switch[#["status"],
+          "Failure",
+          CompoundExpression[
+            AppendTo[result, {"      ", esc["red"], "Verification Error: ", #["err"]["expected"], esc["reset"], "\n"}],
+            AppendTo[result, {"      ", esc["green"], "+ expected ", esc["red"], "- actual\n"}],
+            AppendTo[result, {"      - ", #["err"]["actualValue"], esc["green"], "\n"}],
+            AppendTo[result, {"      - ", #["err"]["expectedValue"], esc["reset"], "\n"}]
+          ],
+          "MessagesFailure",
+          CompoundExpression[
+            AppendTo[result, {"      ", esc["red"], "Unexpected Message(s): ", #["err"]["expectedMsg"], esc["reset"], "\n"}],
+            AppendTo[result, {"      ", esc["green"], "+ expected ", esc["red"], "- actual\n"}],
+            AppendTo[result, {"      - ", #["err"]["actualMessages"], esc["green"], "\n"}],
+            AppendTo[result, {"      - ", #["err"]["expectedMessages"], esc["reset"], "\n"}]
+          ]
+        ]
+      ] & /@ Flatten[getTestObject[#, If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]] & /@ testResults];
       StringJoin[ToString /@ Flatten[result]]
     ];
 
