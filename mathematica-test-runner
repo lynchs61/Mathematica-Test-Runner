@@ -182,11 +182,17 @@ outputJSON[testResults_] :=
           "files" -> Length[testResults],
           "duration" -> getTotalDurationInMS[testResults],
           "tests" -> Plus @@ Flatten[{#["TestsSucceededCount"], #["TestsFailedCount"]} & /@ testResults],
-          "passes" -> Plus @@ (#["TestsSucceededCount"] & /@ testResults),
-          "failures" -> Plus @@ (#["TestsFailedCount"] & /@ testResults)|>|>;
-      outputResults["tests"] = Flatten[getTestObject[#, "Success" | "Failure"] & /@ testResults];
-      outputResults["passes"] = Flatten[getTestObject[#, "Success"] & /@ testResults];
-      outputResults["failures"] = Flatten[getTestObject[#, "Failure"] & /@ testResults];
+          "passes" -> If[argsResult["ignoremessages"],
+            Plus @@ (#["TestsSucceededCount"] + #["TestsFailedWithMessagesCount"] & /@ testResults),
+            Plus @@ (#["TestsSucceededCount"] & /@ testResults)
+          ],
+          "failures" ->  If[argsResult["ignoremessages"],
+            Plus @@ (#["TestsFailedCount"] - #["TestsFailedWithMessagesCount"] & /@ testResults),
+            Plus @@ (#["TestsFailedCount"] & /@ testResults)
+          ]|>|>;
+      outputResults["tests"] = Flatten[getTestObject[#, "Success" | "Failure" | "MessagesFailure"] & /@ testResults];
+      outputResults["passes"] = Flatten[getTestObject[#, If[argsResult["ignoremessages"], "Success" | "MessagesFailure", "Success"]] & /@ testResults];
+      outputResults["failures"] = Flatten[getTestObject[#, If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]] & /@ testResults];
       ExportString[outputResults, "RawJSON"]
     ];
 
