@@ -312,8 +312,14 @@ outputTAP[testResults_] :=
 outputJUnit[testResults_] :=
     Module[{successCount, failureCount, tests, totalCount, duration,
       testSuites, xml, xmlString},
-      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
-      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      successCount = If[argsResult["ignoremessages"],
+        Plus @@ (#["TestsSucceededCount"] + #["TestsFailedWithMessagesCount"] & /@ testResults),
+        Plus @@ (#["TestsSucceededCount"] & /@ testResults)
+      ];
+      failureCount = If[argsResult["ignoremessages"],
+        Plus @@ (#["TestsFailedCount"] - #["TestsFailedWithMessagesCount"] & /@ testResults),
+        Plus @@ (#["TestsFailedCount"] & /@ testResults)
+      ];
       totalCount = successCount + failureCount;
       duration = QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults), "Seconds"];
 
@@ -324,7 +330,10 @@ outputJUnit[testResults_] :=
             {
               "name" -> testReportAssoc["Title"],
               "tests" -> ToString[testReportAssoc["TestsSucceededCount"] + testReportAssoc["TestsFailedCount"]],
-              "failures" -> ToString[testReportAssoc["TestsFailedCount"]],
+              "failures" -> If[
+                argsResult["ignoremessages"],
+                ToString[testReportAssoc["TestsFailedCount"] - testReportAssoc["TestsFailedWithMessagesCount"]],
+                ToString[testReportAssoc["TestsFailedCount"]]],
               "time" -> ToString[QuantityMagnitude[testReportAssoc["TimeElapsed"], "Seconds"]]
             },
             Map[Function[{testResult},
@@ -334,11 +343,18 @@ outputJUnit[testResults_] :=
                   "time" -> ToString[QuantityMagnitude[testResult["AbsoluteTimeUsed"]]]
                 },
                 If[
-                  StringMatchQ[testResult["Outcome"], "Failure"],
+                  StringMatchQ[testResult["Outcome"], If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]],
                   {XMLElement["failure", {}, {
                     XMLObject["CDATASection"][
-                      StringTemplate[
-                        "Verification Error: expected `` to equal ``"][ToString[testResult["ExpectedOutput"]], ToString[testResult["ActualOutput"]]]]}]},
+                      Switch[testResult["Outcome"],
+                        "Failure",
+                        StringTemplate[
+                          "Verification Error: expected `` to equal ``"][ToString[testResult["ExpectedOutput"]], ToString[testResult["ActualOutput"]]],
+                        "MessagesFailure",
+                        StringTemplate[
+                          "Unexpected Messages(s):  expected `` to be ``"][ToString[testResult["ExpectedMessages"]], ToString[testResult["ActualMessages"]]]
+                      ]
+                    ]}]},
                   {}
                 ]]],
               Values[testReportAssoc["TestResults"]]
