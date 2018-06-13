@@ -6,7 +6,7 @@
 
 (*Print[$ScriptCommandLine];*)
 
-version = "1.0.31";
+version = "1.0.32";
 
 versionInfo[] :=
     StringTemplate["Version: ``"][version];
