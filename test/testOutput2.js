@@ -50,7 +50,9 @@ describe('Mathematica-Test-Runner', () => {
 \\s+"expected":"expected 2 to equal 3",\
 \\s+"expectedValue":"2",\
 \\s+"actualValue":"3",\
-\\s+"expectedMessages":"expected {} to equal {}"\
+\\s+"expectedMsg":"expected {} to be {}",\
+\\s+"expectedMessages":"{}",\
+\\s+"actualMessages":"{}"\
 \\s+}\
 \\s+},\
 \\s+{\
@@ -99,7 +101,9 @@ describe('Mathematica-Test-Runner', () => {
 \\s+"expected":"expected 2 to equal 3",\
 \\s+"expectedValue":"2",\
 \\s+"actualValue":"3",\
-\\s+"expectedMessages":"expected {} to equal {}"\
+\\s+"expectedMsg":"expected {} to be {}",\
+\\s+"expectedMessages":"{}",\
+\\s+"actualMessages":"{}"\
 \\s+}\
 \\s+}\
 \\s+\\]\
