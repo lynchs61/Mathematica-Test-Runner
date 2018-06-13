@@ -266,21 +266,34 @@ outputSpec[testResults_] :=
 outputTAP[testResults_] :=
     Module[{result, successCount, failureCount, tests, totalCount},
       result = {};
-      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
-      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      successCount = If[argsResult["ignoremessages"],
+        Plus @@ (#["TestsSucceededCount"] + #["TestsFailedWithMessagesCount"] & /@ testResults),
+        Plus @@ (#["TestsSucceededCount"] & /@ testResults)
+      ];
+      failureCount = If[argsResult["ignoremessages"],
+        Plus @@ (#["TestsFailedCount"] - #["TestsFailedWithMessagesCount"] & /@ testResults),
+        Plus @@ (#["TestsFailedCount"] & /@ testResults)
+      ];
       totalCount = successCount + failureCount;
 
-      tests = Flatten[getTestObject[#, "Failure" | "Success"] & /@ testResults];
+      tests = Flatten[getTestObject[#, "Failure" | "Success" | "MessagesFailure"] & /@ testResults];
 
       AppendTo[result, {"1..", totalCount, "\n"}];
 
       MapIndexed[
         AppendTo[result, {
-          If[#1["status"] == "Success", "ok ", "not ok "],
-          First[#2], " ",
+          If[StringMatchQ[#1["status"], If[argsResult["ignoremessages"], "Success" | "MessagesFailure", "Success"]],
+            "ok ",
+            "not ok "
+          ],
+          First[#2], " - ",
           #1["filetitle"], " ", #1["title"],
           If[#1["status"] == "Failure",
             "\n# Verification Error: " <> #["err"]["expected"],
+            ""
+          ],
+          If[#1["status"] == "MessagesFailure" && !argsResult["ignoremessages"],
+            "\n# Unexpected Messages(s): " <> #["err"]["expectedMsg"],
             ""
           ],
           "\n"
