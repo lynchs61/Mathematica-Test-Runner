@@ -1,15 +1,16 @@
 {
   "name": "@lynch-cc/mathematica-test-runner",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "A test runner for Mathematica tests",
   "directories": {
     "doc": "doc",
     "test": "test"
   },
   "scripts": {
-    "testArgs": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testArgs.xml unitTest/testArgs.js",
-    "testOutput1": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testOutput1.xml unitTest/testOutput1.js",
-    "testOutput2": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testOutput2.xml unitTest/testOutput2.js",
+    "testArgs": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testArgs.xml test/testArgs.js",
+    "testOutput1": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testOutput1.xml test/testOutput1.js",
+    "testOutput2": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testOutput2.xml test/testOutput2.js",
+    "testMessageHandling": "./node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/testMessageHandling.xml test/testMessageHandling.js",
     "version": "./node_modules/.bin/generic-package-version --regex \"^version\\s+=\\s+\\\"(\\d+\\.\\d+\\.\\d+(?:-\\d+)?)\\\";$\" --replacement \"version = \\\"__\\\";\" mathematica-test-runner"
   },
   "bin": "./mathematica-test-runner",

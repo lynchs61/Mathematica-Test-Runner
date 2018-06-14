@@ -6,7 +6,7 @@
 
 (*Print[$ScriptCommandLine];*)
 
-version = "1.0.31";
+version = "1.0.32";
 
 versionInfo[] :=
     StringTemplate["Version: ``"][version];
@@ -23,6 +23,8 @@ usage[] := StringTemplate["
                                  `reporters`.
     -o, --outputfile <filepath>  The path to the output file to save the results. If
                                  this is omitted the results will be sent to stdout.
+    -i, --ignoremessages         Do not fail the test if the expected
+                                 message is incorrect.
 
   Reporters:
 
@@ -105,30 +107,44 @@ parseOpts[argv_] :=
     ]
 
 parseOptsInitial[scriptCommandLine_] :=
-
-    Module[{argList, outPos, outLocPos, outputPath, result},
+    Module[{argList, outPos, outLocPos, ignoreMsgPos, ignoreMsg, outputPath, result},
       argList = Rest[scriptCommandLine];
-      If[Length[argList] == 0,
-        result = <|"exit" -> "help",
-          "msg" -> "Must specify a target file or directory"|>;,
-        CompoundExpression[
-          outPos = Position[argList, "-o" | "--outputfile"],
-          If[Length[outPos] == 0,
-            result = parseOpts[argList];,
-            CompoundExpression[
-              If[Length[argList] < outPos[[1, 1]] + 1,
-                result = <|"exit" -> "help", "msg" -> "Must specify an output location when using the 'outputfile' switch"|>;,
-                CompoundExpression[
-                  outLocPos = MapAt[# + 1 &, outPos, {1, 1}],
-                  outputPath = First[Extract[argList, outLocPos]],
-                  result = parseOpts[Delete[argList, First /@ {outPos, outLocPos}]],
-                  result["output"] = outputPath]
-              ]
-            ]
-          ]
-        ]
-      ];
-      result
+      outputPath = "";
+
+      Catch[
+        If[Length[argList] == 0,
+          Throw[<|"exit" -> "help", "msg" -> "Must specify a target file or directory"|>]
+        ];
+
+        outPos = Position[argList, "-o" | "--outputfile"];
+        ignoreMsgPos = Position[argList, "-i" | "--ignoremessages"];
+
+        If[Length[outPos] != 0,
+          If[Length[argList] < outPos[[1, 1]] + 1,
+            Throw[<|"exit" -> "help", "msg" -> "Must specify an output location when using the 'outputfile' switch"|>],
+
+            outLocPos = MapAt[# + 1 &, outPos, {1, 1}];
+            outputPath = First[Extract[argList, outLocPos]];
+            argList = Delete[argList, First /@ {outPos, outLocPos}];
+          ];
+        ];
+
+        If[Length[ignoreMsgPos] != 0,
+          ignoreMsg = True;
+          argList = Delete[argList, ignoreMsgPos],
+
+          ignoreMsg = False;
+        ];
+
+        result = parseOpts[argList];
+        result["ignoremessages"] = ignoreMsg;
+
+        If[outputPath != "",
+          result["output"] = outputPath
+        ];
+
+        Throw[result];
+      ]
     ]
 
 argsResult = parseOptsInitial[$ScriptCommandLine];
@@ -144,11 +160,13 @@ getTestObject[testReportObject_, outcomePattern_] :=
           "duration" -> N[QuantityMagnitude[#["AbsoluteTimeUsed"], "Milliseconds"]],
           "status" -> #["Outcome"],
           "err" ->
-              If[#["Outcome"] == "Failure",
+              If[StringMatchQ[#["Outcome"], If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]],
                 <|"expected" -> StringTemplate["expected `` to equal ``"][ToString[#["ExpectedOutput"]], ToString[#["ActualOutput"]]],
                   "expectedValue" -> ToString[#["ExpectedOutput"]],
                   "actualValue" -> ToString[#["ActualOutput"]],
-                  "expectedMessages" -> StringTemplate["expected `` to equal ``"][ToString[#["ExpectedMessages"]], ToString[#["ActualMessages"]]]|>,
+                  "expectedMsg" -> StringTemplate["expected `` to be ``"][ToString[#["ExpectedMessages"]], ToString[#["ActualMessages"]]],
+                  "expectedMessages" -> ToString[#["ExpectedMessages"]],
+                  "actualMessages" -> ToString[#["ActualMessages"]]|>,
                 <||>
               ]
         |>, {}] & /@ results
@@ -164,11 +182,17 @@ outputJSON[testResults_] :=
           "files" -> Length[testResults],
           "duration" -> getTotalDurationInMS[testResults],
           "tests" -> Plus @@ Flatten[{#["TestsSucceededCount"], #["TestsFailedCount"]} & /@ testResults],
-          "passes" -> Plus @@ (#["TestsSucceededCount"] & /@ testResults),
-          "failures" -> Plus @@ (#["TestsFailedCount"] & /@ testResults)|>|>;
-      outputResults["tests"] = Flatten[getTestObject[#, "Success" | "Failure"] & /@ testResults];
-      outputResults["passes"] = Flatten[getTestObject[#, "Success"] & /@ testResults];
-      outputResults["failures"] = Flatten[getTestObject[#, "Failure"] & /@ testResults];
+          "passes" -> If[argsResult["ignoremessages"],
+            Plus @@ (#["TestsSucceededCount"] + #["TestsFailedWithMessagesCount"] & /@ testResults),
+            Plus @@ (#["TestsSucceededCount"] & /@ testResults)
+          ],
+          "failures" ->  If[argsResult["ignoremessages"],
+            Plus @@ (#["TestsFailedCount"] - #["TestsFailedWithMessagesCount"] & /@ testResults),
+            Plus @@ (#["TestsFailedCount"] & /@ testResults)
+          ]|>|>;
+      outputResults["tests"] = Flatten[getTestObject[#, "Success" | "Failure" | "MessagesFailure"] & /@ testResults];
+      outputResults["passes"] = Flatten[getTestObject[#, If[argsResult["ignoremessages"], "Success" | "MessagesFailure", "Success"]] & /@ testResults];
+      outputResults["failures"] = Flatten[getTestObject[#, If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]] & /@ testResults];
       ExportString[outputResults, "RawJSON"]
     ];
 
@@ -187,8 +211,13 @@ outputSpec[testResults_] :=
         "green" -> "\033[1;32m", "gray" -> "\033[0;37m"];
 
       duration = getTotalDurationInMS[testResults];
-      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
-      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      If[argsResult["ignoremessages"],
+        successCount = Plus @@ (#["TestsSucceededCount"] + #["TestsFailedWithMessagesCount"] & /@ testResults);
+        failureCount = Plus @@ (#["TestsFailedCount"] - #["TestsFailedWithMessagesCount"] & /@ testResults);
+        ,
+        successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
+        failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      ];
 
       CompoundExpression[
         AppendTo[result, {"\n  ", First[#]["filetitle"], "\n"}],
@@ -196,8 +225,14 @@ outputSpec[testResults_] :=
           Switch[
             test["status"],
             "Success", AppendTo[result, {"    ", esc["green"], "\[Checkmark] ", esc["gray"], test["title"], esc["reset"], "\n"}],
-            "Failure", AppendTo[result, {"    ", esc["red"], "\[Times] ", test["title"], esc["reset"], "\n"}]]], #]
-      ] & /@ (getTestObject[#, "Failure" | "Success"] & /@ testResults);
+            "Failure", AppendTo[result, {"    ", esc["red"], "\[Times] ", test["title"], esc["reset"], "\n"}],
+            "MessagesFailure",
+            If[argsResult["ignoremessages"],
+              AppendTo[result, {"    ", esc["green"], "\[Checkmark] ", esc["gray"], test["title"], esc["reset"], "\n"}],
+              AppendTo[result, {"    ", esc["red"], "\[Times] ", test["title"], esc["reset"], "\n"}]
+            ]
+          ]], #]
+      ] & /@ (getTestObject[#, "Failure" | "Success" | "MessagesFailure"] & /@ testResults);
 
       AppendTo[result, "\n"];
       AppendTo[result, {"  ", esc["green"], successCount, " passing", esc["reset"], esc["gray"], StringTemplate[" (``ms)"][duration], "\n"}];
@@ -208,32 +243,57 @@ outputSpec[testResults_] :=
       CompoundExpression[
         AppendTo[result, {"    ", #["filetitle"], "\n"}],
         AppendTo[result, {"      ", #["title"], "\n"}],
-        AppendTo[result, {"      ", esc["red"], "Verification Error: ", #["err"]["expected"], esc["reset"], "\n"}];
-        AppendTo[result, {"      ", esc["green"], "+ expected ", esc["red"], "- actual\n"}];
-        AppendTo[result, {"      - ", #["err"]["actualValue"], esc["green"], "\n"}];
-        AppendTo[result, {"      - ", #["err"]["expectedValue"], esc["reset"], "\n"}];
-      ] & /@ Flatten[getTestObject[#, "Failure"] & /@ testResults];
+        Switch[#["status"],
+          "Failure",
+          CompoundExpression[
+            AppendTo[result, {"      ", esc["red"], "Verification Error: ", #["err"]["expected"], esc["reset"], "\n"}],
+            AppendTo[result, {"      ", esc["green"], "+ expected ", esc["red"], "- actual\n"}],
+            AppendTo[result, {"      - ", #["err"]["actualValue"], esc["green"], "\n"}],
+            AppendTo[result, {"      - ", #["err"]["expectedValue"], esc["reset"], "\n"}]
+          ],
+          "MessagesFailure",
+          CompoundExpression[
+            AppendTo[result, {"      ", esc["red"], "Unexpected Message(s): ", #["err"]["expectedMsg"], esc["reset"], "\n"}],
+            AppendTo[result, {"      ", esc["green"], "+ expected ", esc["red"], "- actual\n"}],
+            AppendTo[result, {"      - ", #["err"]["actualMessages"], esc["green"], "\n"}],
+            AppendTo[result, {"      - ", #["err"]["expectedMessages"], esc["reset"], "\n"}]
+          ]
+        ]
+      ] & /@ Flatten[getTestObject[#, If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]] & /@ testResults];
       StringJoin[ToString /@ Flatten[result]]
     ];
 
 outputTAP[testResults_] :=
     Module[{result, successCount, failureCount, tests, totalCount},
       result = {};
-      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
-      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      successCount = If[argsResult["ignoremessages"],
+        Plus @@ (#["TestsSucceededCount"] + #["TestsFailedWithMessagesCount"] & /@ testResults),
+        Plus @@ (#["TestsSucceededCount"] & /@ testResults)
+      ];
+      failureCount = If[argsResult["ignoremessages"],
+        Plus @@ (#["TestsFailedCount"] - #["TestsFailedWithMessagesCount"] & /@ testResults),
+        Plus @@ (#["TestsFailedCount"] & /@ testResults)
+      ];
       totalCount = successCount + failureCount;
 
-      tests = Flatten[getTestObject[#, "Failure" | "Success"] & /@ testResults];
+      tests = Flatten[getTestObject[#, "Failure" | "Success" | "MessagesFailure"] & /@ testResults];
 
       AppendTo[result, {"1..", totalCount, "\n"}];
 
       MapIndexed[
         AppendTo[result, {
-          If[#1["status"] == "Success", "ok ", "not ok "],
-          First[#2], " ",
+          If[StringMatchQ[#1["status"], If[argsResult["ignoremessages"], "Success" | "MessagesFailure", "Success"]],
+            "ok ",
+            "not ok "
+          ],
+          First[#2], " - ",
           #1["filetitle"], " ", #1["title"],
           If[#1["status"] == "Failure",
             "\n# Verification Error: " <> #["err"]["expected"],
+            ""
+          ],
+          If[#1["status"] == "MessagesFailure" && !argsResult["ignoremessages"],
+            "\n# Unexpected Messages(s): " <> #["err"]["expectedMsg"],
             ""
           ],
           "\n"
@@ -252,8 +312,14 @@ outputTAP[testResults_] :=
 outputJUnit[testResults_] :=
     Module[{successCount, failureCount, tests, totalCount, duration,
       testSuites, xml, xmlString},
-      successCount = Plus @@ (#["TestsSucceededCount"] & /@ testResults);
-      failureCount = Plus @@ (#["TestsFailedCount"] & /@ testResults);
+      successCount = If[argsResult["ignoremessages"],
+        Plus @@ (#["TestsSucceededCount"] + #["TestsFailedWithMessagesCount"] & /@ testResults),
+        Plus @@ (#["TestsSucceededCount"] & /@ testResults)
+      ];
+      failureCount = If[argsResult["ignoremessages"],
+        Plus @@ (#["TestsFailedCount"] - #["TestsFailedWithMessagesCount"] & /@ testResults),
+        Plus @@ (#["TestsFailedCount"] & /@ testResults)
+      ];
       totalCount = successCount + failureCount;
       duration = QuantityMagnitude[Plus @@ (#["TimeElapsed"] & /@ testResults), "Seconds"];
 
@@ -264,7 +330,10 @@ outputJUnit[testResults_] :=
             {
               "name" -> testReportAssoc["Title"],
               "tests" -> ToString[testReportAssoc["TestsSucceededCount"] + testReportAssoc["TestsFailedCount"]],
-              "failures" -> ToString[testReportAssoc["TestsFailedCount"]],
+              "failures" -> If[
+                argsResult["ignoremessages"],
+                ToString[testReportAssoc["TestsFailedCount"] - testReportAssoc["TestsFailedWithMessagesCount"]],
+                ToString[testReportAssoc["TestsFailedCount"]]],
               "time" -> ToString[QuantityMagnitude[testReportAssoc["TimeElapsed"], "Seconds"]]
             },
             Map[Function[{testResult},
@@ -274,11 +343,18 @@ outputJUnit[testResults_] :=
                   "time" -> ToString[QuantityMagnitude[testResult["AbsoluteTimeUsed"]]]
                 },
                 If[
-                  StringMatchQ[testResult["Outcome"], "Failure"],
+                  StringMatchQ[testResult["Outcome"], If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]],
                   {XMLElement["failure", {}, {
                     XMLObject["CDATASection"][
-                      StringTemplate[
-                        "Verification Error: expected `` to equal ``"][ToString[testResult["ExpectedOutput"]], ToString[testResult["ActualOutput"]]]]}]},
+                      Switch[testResult["Outcome"],
+                        "Failure",
+                        StringTemplate[
+                          "Verification Error: expected `` to equal ``"][ToString[testResult["ExpectedOutput"]], ToString[testResult["ActualOutput"]]],
+                        "MessagesFailure",
+                        StringTemplate[
+                          "Unexpected Messages(s):  expected `` to be ``"][ToString[testResult["ExpectedMessages"]], ToString[testResult["ActualMessages"]]]
+                      ]
+                    ]}]},
                   {}
                 ]]],
               Values[testReportAssoc["TestResults"]]

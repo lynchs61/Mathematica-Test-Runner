@@ -38,7 +38,9 @@ const output = `{
                                 "expected":"expected 2 to equal 3",
                                 "expectedValue":"2",
                                 "actualValue":"3",
-                                "expectedMessages":"expected {} to equal {}"
+                                "expectedMsg":"expected {} to be {}",
+                                "expectedMessages":"{}",
+                                "actualMessages":"{}"
                         }
                 },
                 {
@@ -87,7 +89,9 @@ const output = `{
                                 "expected":"expected 2 to equal 3",
                                 "expectedValue":"2",
                                 "actualValue":"3",
-                                "expectedMessages":"expected {} to equal {}"
+                                "expectedMsg":"expected {} to be {}",
+                                "expectedMessages":"{}",
+                                "actualMessages":"{}"
                         }
                 }
         ]
@@ -129,7 +133,9 @@ const JSONMatchString = `{
 \\s+"expected":"expected 2 to equal 3",\
 \\s+"expectedValue":"2",\
 \\s+"actualValue":"3",\
-\\s+"expectedMessages":"expected {} to equal {}"\
+\\s+"expectedMsg":"expected {} to be {}",\
+\\s+"expectedMessages":"{}",\
+\\s+"actualMessages":"{}"\
 \\s+}\
 \\s+},\
 \\s+{\
@@ -178,7 +184,9 @@ const JSONMatchString = `{
 \\s+"expected":"expected 2 to equal 3",\
 \\s+"expectedValue":"2",\
 \\s+"actualValue":"3",\
-\\s+"expectedMessages":"expected {} to equal {}"\
+\\s+"expectedMsg":"expected {} to be {}",\
+\\s+"expectedMessages":"{}",\
+\\s+"actualMessages":"{}"\
 \\s+}\
 \\s+}\
 \\s+\\]\

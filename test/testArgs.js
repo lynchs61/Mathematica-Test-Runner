@@ -20,15 +20,15 @@ describe('Mathematica-Test-Runner', () => {
       stdout.split('\n')[0].should.equal('Must specify a target file or directory')
       done()
     })
-  }).timeout(timeout)
+  }).timeout(10 * timeout)
 
   it('should handle bogus args', done => {
-    exec('./mathematica-test-runner -f --foo -b --bar', (error, stdout, stderr) => {
+    exec('./mathematica-test-runner -i --foo -b --bar', (error, stdout, stderr) => {
       if (error) throw error
-      stdout.split('\n')[0].should.equal('Invalid option \'-f\'')
+      stdout.split('\n')[0].should.equal('Invalid option \'--foo\'')
       done()
     })
-  }).timeout(timeout)
+  }).timeout(10 * timeout)
 
   it('should print out the help text from --help', done => {
     let helpPath = path.join(__dirname, './assets/help.txt')
@@ -38,7 +38,7 @@ describe('Mathematica-Test-Runner', () => {
       stdout.should.equal(helpText)
       done()
     })
-  }).timeout(timeout)
+  }).timeout(10 * timeout)
 
   it('should print out the help text from -h', done => {
     let helpPath = path.join(__dirname, './assets/help.txt')
@@ -48,7 +48,7 @@ describe('Mathematica-Test-Runner', () => {
       stdout.should.equal(helpText)
       done()
     })
-  }).timeout(timeout)
+  }).timeout(10 * timeout)
 
   it('should print out the version from --version', done => {
     exec('./mathematica-test-runner --version', (error, stdout, stderr) => {
@@ -56,7 +56,7 @@ describe('Mathematica-Test-Runner', () => {
       stdout.should.equal(`Version: ${version}\n`)
       done()
     })
-  }).timeout(timeout)
+  }).timeout(10 * timeout)
 
   it('should print out the version from -V', done => {
     exec('./mathematica-test-runner -V', (error, stdout, stderr) => {
@@ -64,7 +64,7 @@ describe('Mathematica-Test-Runner', () => {
       stdout.should.equal(`Version: ${version}\n`)
       done()
     })
-  }).timeout(timeout)
+  }).timeout(10 * timeout)
 
   it('should handle invalid reporter', done => {
     exec('./mathematica-test-runner -R bogus', (error, stdout, stderr) => {
@@ -72,5 +72,5 @@ describe('Mathematica-Test-Runner', () => {
       stdout.split('\n')[0].should.equal('\'bogus\' is not a valid reporter. Please choose from {spec, tap, json, mathematica, junit}')
       done()
     })
-  }).timeout(timeout)
+  }).timeout(10 * timeout)
 })
