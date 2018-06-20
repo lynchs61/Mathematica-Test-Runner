@@ -69,7 +69,7 @@ describe('Mathematica-Test-Runner', () => {
   it('should handle invalid reporter', done => {
     exec('./mathematica-test-runner -R bogus', (error, stdout, stderr) => {
       if (error) throw error
-      stdout.split('\n')[0].should.equal('\'bogus\' is not a valid reporter. Please choose from {spec, tap, json, mathematica, junit}')
+      stdout.split('\n')[0].should.equal('\'bogus\' is not a valid reporter. Please choose from {spec, tap, json, mathematica, junit} :)')
       done()
     })
   }).timeout(10 * timeout)
