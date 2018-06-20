@@ -14,22 +14,52 @@ pipeline {
                 sh 'npm run testArgs'
             }
         }
-        stage('TestOutput') {
-            when { not { branch 'master' } }
-            steps {
-                sh 'npm run testOutput1'
-                sh 'npm run testOutput2'
-            }
-        }
-        stage('TestMessageHandling') {
-            when { not { branch 'master' } }
-            steps {
-                sh 'npm run testMessageHandling'
+        stage('TestOutputAndMessages') {
+            parallel {
+                stage('TestOutput1') {
+                    agent {
+                        node {
+                            label 'mathematica && npm-@lynch-cc'
+                        }
+                    }
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run testOutput1'
+                        stash includes: 'junit/*', name: 'testOutput1'
+                    }
+                }
+                stage('TestOutput2') {
+                    agent {
+                        node {
+                            label 'mathematica && npm-@lynch-cc'
+                        }
+                    }
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run testOutput2'
+                        stash includes: 'junit/*', name: 'testOutput2'
+                    }
+                }
+                stage('TestMessageHandling') {
+                    agent {
+                        node {
+                            label 'mathematica && npm-@lynch-cc'
+                        }
+                    }
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run testMessageHandling'
+                        stash includes: 'junit/*', name: 'testMessageHandling'
+                    }
+                }
             }
         }
     }
     post {
         always {
+            unstash 'testOutput1'
+            unstash 'testOutput2'
+            unstash 'testMessageHandling'
             publishReports()
         }
         success {
@@ -52,7 +82,7 @@ pipeline {
                     sh "git remote add github git@github.com:lynchs61/Mathematica-Test-Runner.git"
                     sh "git fetch github"
                     sh "git checkout --track github/master"
-                    sh "git checkout ${origBranch} mathematica-test-runner README.md test doc"
+                    sh "git checkout ${origBranch} mathematica-test-runner README.md mathematicaTests doc"
                     sh "git commit -m \"$commits\""
                     sh "git tag ${env.VERSION}"
                     sh "git pull"
