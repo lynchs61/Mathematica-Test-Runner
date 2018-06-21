@@ -12,8 +12,8 @@ pipeline {
                 initialSetup()
                 sh 'npm install'
                 script {
-                    def status = sh script: 'npm run testArgs', returnStatus: true
-                    println("'npm run testArgs' exited with $status")
+                    env.OUTPUT = sh script: 'npm run testArgs', returnStdout: true
+                    echo "Output: ${env.OUTPUT}"
                 }
             }
         }
