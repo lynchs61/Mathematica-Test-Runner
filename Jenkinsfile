@@ -12,7 +12,7 @@ pipeline {
                 initialSetup()
                 sh 'npm install'
                 script {
-                    def statusCode = sh 'npm run testArgs', returnStatus:true
+                    def statusCode = sh script: 'npm run testArgs', returnStatus:true
                     println("**** npm run testArgs exited with: $statusCode")
                 }
             }
