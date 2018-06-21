@@ -16,9 +16,6 @@ const timeout = 60000
 describe('Mathematica-Test-Runner', () => {
   it('should handle no args', done => {
     exec('./mathematica-test-runner', (error, stdout, stderr) => {
-      console.log(`stdout: ${stdout}`)
-      console.log(`stderr: ${stderr}`)
-      console.log(`errorMessage: ${error.message}`)
       if (error) throw error
       stdout.split('\n')[0].should.equal('Must specify a target file or directory')
       done()

@@ -11,11 +11,7 @@ pipeline {
             steps {
                 initialSetup()
                 sh 'npm install'
-                script {
-                    def status = sh script: 'npm run testArgs > npmOutput.txt', returnStatus: true
-                    echo "Status: ${status}"
-                }
-                sh 'cat npmOutput.txt'
+                sh 'npm run testArgs'
             }
         }
         stage('TestOutputAndMessages') {
