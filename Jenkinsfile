@@ -11,7 +11,10 @@ pipeline {
             steps {
                 initialSetup()
                 sh 'npm install'
-                sh 'npm run testArgs'
+                script {
+                    def status = sh script: 'npm run testArgs', returnStatus: true
+                    println("'npm run testArgs' exited with $status")
+                }
             }
         }
         stage('TestOutputAndMessages') {
