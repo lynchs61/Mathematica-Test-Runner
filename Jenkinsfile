@@ -11,58 +11,69 @@ pipeline {
             steps {
                 initialSetup()
                 sh 'npm install'
-                script {
-                    def statusCode = sh script: 'npm run testArgs', returnStatus:true
-                    println("**** npm run testArgs exited with: $statusCode")
+                sh 'npm run testArgs'
+            }
+        }
+        stage('TestOutputAndMessages') {
+            parallel {
+                stage('TestOutput1') {
+                    agent {
+                        node {
+                            label 'mathematica && npm-@lynch-cc'
+                        }
+                    }
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run testOutput1'
+                        stash includes: 'junit/*', name: 'testOutput1'
+                    }
+                }
+                stage('TestOutput2') {
+                    agent {
+                        node {
+                            label 'mathematica && npm-@lynch-cc'
+                        }
+                    }
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run testOutput2'
+                        stash includes: 'junit/*', name: 'testOutput2'
+                    }
+                }
+                stage('TestMessageHandling') {
+                    agent {
+                        node {
+                            label 'mathematica && npm-@lynch-cc'
+                        }
+                    }
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run testMessageHandling'
+                        stash includes: 'junit/*', name: 'testMessageHandling'
+                    }
                 }
             }
         }
-//         stage('TestOutputAndMessages') {
-//             parallel {
-//                 stage('TestOutput1') {
-//                     agent {
-//                         node {
-//                             label 'mathematica && npm-@lynch-cc'
-//                         }
-//                     }
-//                     steps {
-//                         sh 'npm install'
-//                         sh 'npm run testOutput1'
-//                         stash includes: 'junit/*', name: 'testOutput1'
-//                     }
-//                 }
-//                 stage('TestOutput2') {
-//                     agent {
-//                         node {
-//                             label 'mathematica && npm-@lynch-cc'
-//                         }
-//                     }
-//                     steps {
-//                         sh 'npm install'
-//                         sh 'npm run testOutput2'
-//                         stash includes: 'junit/*', name: 'testOutput2'
-//                     }
-//                 }
-//                 stage('TestMessageHandling') {
-//                     agent {
-//                         node {
-//                             label 'mathematica && npm-@lynch-cc'
-//                         }
-//                     }
-//                     steps {
-//                         sh 'npm install'
-//                         sh 'npm run testMessageHandling'
-//                         stash includes: 'junit/*', name: 'testMessageHandling'
-//                     }
-//                 }
-//             }
-//         }
     }
     post {
         always {
-            unstash 'testOutput1'
-            unstash 'testOutput2'
-            unstash 'testMessageHandling'
+            script {
+                try {
+                    unstash 'testOutput1'   
+                } catch (error) {
+                    echo "No stash found for testOutput1"
+                }
+                try {
+                    unstash 'testOutput2'   
+                } catch (error) {
+                    echo "No stash found for testOutput2"
+                }
+                try {
+                    unstash 'testMessageHandling'   
+                } catch (error) {
+                    echo "No stash found for testMessageHandling"
+                }
+            }
             publishReports()
         }
         success {
