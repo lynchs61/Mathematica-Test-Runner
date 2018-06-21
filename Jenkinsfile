@@ -12,9 +12,10 @@ pipeline {
                 initialSetup()
                 sh 'npm install'
                 script {
-                    env.OUTPUT = sh script: 'npm run testArgs', returnStdout: true
-                    echo "Output: ${env.OUTPUT}"
+                    def status = sh script: 'npm run testArgs > npmOutput.txt', returnStatus: true
+                    echo "Status: ${status}"
                 }
+                sh 'cat npmOutput.txt'
             }
         }
         stage('TestOutputAndMessages') {
