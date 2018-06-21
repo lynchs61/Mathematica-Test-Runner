@@ -3,7 +3,7 @@
 pipeline {
     agent {
         node {
-            label 'mathematica && npm-@lynch-cc'
+            label 'math11'
         }
     }
     stages {
@@ -19,7 +19,7 @@ pipeline {
                 stage('TestOutput1') {
                     agent {
                         node {
-                            label 'mathematica && npm-@lynch-cc'
+                            label 'math11'
                         }
                     }
                     steps {
@@ -31,7 +31,7 @@ pipeline {
                 stage('TestOutput2') {
                     agent {
                         node {
-                            label 'mathematica && npm-@lynch-cc'
+                            label 'math12'
                         }
                     }
                     steps {
@@ -43,7 +43,7 @@ pipeline {
                 stage('TestMessageHandling') {
                     agent {
                         node {
-                            label 'mathematica && npm-@lynch-cc'
+                            label 'math13'
                         }
                     }
                     steps {
