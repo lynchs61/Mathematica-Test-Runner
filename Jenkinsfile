@@ -3,7 +3,7 @@
 pipeline {
     agent {
         node {
-            label 'math11'
+            label 'math10'
         }
     }
     stages {
