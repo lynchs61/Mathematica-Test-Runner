@@ -95,7 +95,6 @@ pipeline {
                     returnStdout: true
                 ).trim().replaceAll("v", "")
             }
-            finalizeSuccess('mathematicaclitool', null, env.VERSION)
             script {
                 def origBranch = env.GIT_LOCAL_BRANCH
                 def buildNumber = env.BUILD_NUMBER as Integer
@@ -116,6 +115,7 @@ pipeline {
                     sh "git push github ${env.VERSION}"
                 }
             }
+            finalizeSuccess('mathematicaclitool', null, env.VERSION)
         }
         failure {
             finalizeFail()
