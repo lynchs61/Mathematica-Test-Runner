@@ -26,7 +26,7 @@ pipeline {
                         }
                     }
                     steps {
-                        cleanWs()
+                        initialSetup()
                         sh 'npm install'
                         script {
                             def status = sh script: 'npm run testOutput1', returnStatus: true
@@ -42,7 +42,7 @@ pipeline {
                         }
                     }
                     steps {
-                        cleanWs()
+                        initialSetup()
                         sh 'npm install'
                         script {
                             def status = sh script: 'npm run testOutput2', returnStatus: true
@@ -58,7 +58,7 @@ pipeline {
                         }
                     }
                     steps {
-                        cleanWs()
+                        initialSetup()
                         sh 'npm install'
                         script {
                             def status = sh script: 'npm run testMessageHandling', returnStatus: true
