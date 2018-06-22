@@ -26,6 +26,7 @@ pipeline {
                         }
                     }
                     steps {
+                        cleanWs()
                         sh 'npm install'
                         script {
                             def status = sh script: 'npm run testOutput1', returnStatus: true
@@ -41,6 +42,7 @@ pipeline {
                         }
                     }
                     steps {
+                        cleanWs()
                         sh 'npm install'
                         script {
                             def status = sh script: 'npm run testOutput2', returnStatus: true
@@ -56,11 +58,12 @@ pipeline {
                         }
                     }
                     steps {
+                        cleanWs()
                         sh 'npm install'
                         script {
                             def status = sh script: 'npm run testMessageHandling', returnStatus: true
                             println("npm run testMessageHandling: exit(${status})")
-                        }       
+                        }
                         stash includes: 'junit/*', name: 'testMessageHandling'
                     }
                 }
@@ -71,17 +74,17 @@ pipeline {
         always {
             script {
                 try {
-                    unstash 'testOutput1'   
+                    unstash 'testOutput1'
                 } catch (error) {
                     echo "No stash found for testOutput1"
                 }
                 try {
-                    unstash 'testOutput2'   
+                    unstash 'testOutput2'
                 } catch (error) {
                     echo "No stash found for testOutput2"
                 }
                 try {
-                    unstash 'testMessageHandling'   
+                    unstash 'testMessageHandling'
                 } catch (error) {
                     echo "No stash found for testMessageHandling"
                 }
@@ -91,8 +94,8 @@ pipeline {
         success {
             script {
                 env.VERSION = sh (
-                    script: "npm version patch -m \"$env.ISSUE_KEY %s\" | grep -Po \"v\\d+\\.\\d+\\.\\d+(?:-\\d+)?\"",
-                    returnStdout: true
+                        script: "npm version patch -m \"$env.ISSUE_KEY %s\" | grep -Po \"v\\d+\\.\\d+\\.\\d+(?:-\\d+)?\"",
+                        returnStdout: true
                 ).trim().replaceAll("v", "")
             }
             script {
@@ -100,8 +103,8 @@ pipeline {
                 def buildNumber = env.BUILD_NUMBER as Integer
                 if (origBranch != 'master' && buildNumber > 1) {
                     def commits = sh(
-                        script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
-                        returnStdout: true
+                            script: "git log --oneline \$(git describe --tags --abbrev=0 @^)..@ | sed -E 's/^[a-f0-9]+ (.*)\$/* \\1/g'",
+                            returnStdout: true
                     )
                     sh "echo \"$commits\""
                     sh "git remote add github git@github.com:lynchs61/Mathematica-Test-Runner.git"
