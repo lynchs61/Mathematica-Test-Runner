@@ -10,11 +10,10 @@ const exec = require('child_process').exec
 const fs = require('fs')
 const path = require('path')
 
-let version = require(path.join(__dirname, '../package.json')).version
 const timeout = 60000
 
 describe('Mathematica-Test-Runner', () => {
-   describe('Spec Reporter', () => {
+  describe('Spec Reporter', () => {
     const g = '\\[1;32m'
     const r = '\\[0;31m'
     const gr = '\\[0;37m'
