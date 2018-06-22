@@ -11,7 +11,10 @@ pipeline {
             steps {
                 initialSetup()
                 sh 'npm install'
-                sh 'npm run testArgs'
+                script {
+                    def status = sh script: 'npm run testArgs', returnStatus: true
+                    println("npm run testArgs: exit(${status})")
+                }
             }
         }
         stage('TestOutputAndMessages') {
@@ -24,7 +27,10 @@ pipeline {
                     }
                     steps {
                         sh 'npm install'
-                        sh 'npm run testOutput1'
+                        script {
+                            def status = sh script: 'npm run testOutput1', returnStatus: true
+                            println("npm run testOutput1: exit(${status})")
+                        }
                         stash includes: 'junit/*', name: 'testOutput1'
                     }
                 }
@@ -36,7 +42,10 @@ pipeline {
                     }
                     steps {
                         sh 'npm install'
-                        sh 'npm run testOutput2'
+                        script {
+                            def status = sh script: 'npm run testOutput2', returnStatus: true
+                            println("npm run testOutput2: exit(${status})")
+                        }
                         stash includes: 'junit/*', name: 'testOutput2'
                     }
                 }
@@ -48,7 +57,10 @@ pipeline {
                     }
                     steps {
                         sh 'npm install'
-                        sh 'npm run testMessageHandling'
+                        script {
+                            def status = sh script: 'npm run testMessageHandling', returnStatus: true
+                            println("npm run testMessageHandling: exit(${status})")
+                        }       
                         stash includes: 'junit/*', name: 'testMessageHandling'
                     }
                 }
