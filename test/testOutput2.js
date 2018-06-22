@@ -161,7 +161,7 @@ describe('Mathematica-Test-Runner', () => {
 \\s+time='${float}'>
 \\s+<testcase name='None'
 \\s+time='${float}'>
-\\s+<failure><!\\[CDATA\\[Verification Error: expected 2 to equal 3\\]\\]></failure>
+\\s+<failure><!\\[CDATA\\[Verification Error: expected 2 to equal 3\\]\\]>(<!\\[CDATA\\[>)?</failure>
 \\s+</testcase>
 \\s+<testcase name='None'
 \\s+time='${float}' />
