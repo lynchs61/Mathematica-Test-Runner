@@ -1,7 +1,7 @@
 # Mathematica-Test-Runner
 A test runner for Mathematica tests. This takes a target test
 (or test directory), runs the tests, and outputs the results in the format
-specified. If a directory is given, all files in the toplevel of the directory
+specified. If a directory is given, all files in the top-level of the directory
 will attempt to be run.
 
     Usage: ./mathematica-test-runner [options] [targetFile|targetDirectory]
