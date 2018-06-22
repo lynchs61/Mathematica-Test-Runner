@@ -16,7 +16,7 @@ describe('Mathematica-Test-Runner', () => {
   describe('TAP Message Handling', () => {
     it('TAP without message checking should have the correct failures and success', done => {
       exec('./mathematica-test-runner -i -R tap mathematicaTests/testWithMessages/', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         const lines = stdout.split('\n')
         lines[6].should.equal('# pass 2')
         lines[7].should.equal('# fail 1')
@@ -26,7 +26,7 @@ describe('Mathematica-Test-Runner', () => {
 
     it('TAP with message checking should have the correct failures and success', done => {
       exec('./mathematica-test-runner -R tap mathematicaTests/testWithMessages/', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         const lines = stdout.split('\n')
         lines[2].should.match(/^# Unexpected Message.*/)
         lines[7].should.equal('# pass 1')
@@ -38,7 +38,7 @@ describe('Mathematica-Test-Runner', () => {
   describe('Spec Message Handling', () => {
     it('Spec without message checking should have the correct failures and success', done => {
       exec('./mathematica-test-runner -i -R spec mathematicaTests/testWithMessages/', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         const lines = stdout.split('\n')
         lines[6].should.match(/.*\[1;32m2 passing.*/)
         lines[7].should.match(/.*\[0;31m1 failing.*/)
@@ -48,7 +48,7 @@ describe('Mathematica-Test-Runner', () => {
 
     it('Spec with message checking should have the correct failures and success', done => {
       exec('./mathematica-test-runner -R spec mathematicaTests/testWithMessages/', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         const lines = stdout.split('\n')
         lines[10].should.match(/^.*Unexpected Message.*/)
         lines[6].should.match(/.*\[1;32m1 passing.*/)
@@ -60,7 +60,7 @@ describe('Mathematica-Test-Runner', () => {
   describe('JUnit Message Handling', () => {
     it('JUnit without message checking should have the correct failures and success', done => {
       exec('./mathematica-test-runner -i -R junit mathematicaTests/testWithMessages/', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         const lines = stdout.split('\n')
         lines[4].should.equal('    failures=\'1\'>')
         done()
@@ -69,7 +69,7 @@ describe('Mathematica-Test-Runner', () => {
 
     it('JUnit with message checking should have the correct failures and success', done => {
       exec('./mathematica-test-runner -R junit mathematicaTests/testWithMessages/', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         const lines = stdout.split('\n')
         lines[15].should.match(/^.*Unexpected Message.*/)
         lines[4].should.equal('    failures=\'2\'>')
@@ -80,7 +80,7 @@ describe('Mathematica-Test-Runner', () => {
   describe('JSON Message Handling', () => {
     it('JSON without message checking should have the correct failures and success', done => {
       exec('./mathematica-test-runner -i -R json mathematicaTests/testWithMessages/', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         const lines = stdout.split('\n')
         lines[5].should.equal('\t\t"passes":2,')
         lines[6].should.equal('\t\t"failures":1')
@@ -90,7 +90,7 @@ describe('Mathematica-Test-Runner', () => {
 
     it('JSON with message checking should have the correct failures and success', done => {
       exec('./mathematica-test-runner -R json mathematicaTests/testWithMessages/', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         const lines = stdout.split('\n')
         lines[19].should.match(/^.*expectedMsg.*/)
         lines[5].should.equal('\t\t"passes":1,')

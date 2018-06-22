@@ -16,7 +16,7 @@ const timeout = 60000
 describe('Mathematica-Test-Runner', () => {
   it('should handle no args', done => {
     exec('./mathematica-test-runner', (error, stdout, stderr) => {
-      if (error) throw error
+      should.not.exist(error)
       stdout.split('\n')[0].should.equal('Must specify a target file or directory')
       done()
     })
@@ -24,7 +24,7 @@ describe('Mathematica-Test-Runner', () => {
 
   it('should handle bogus args', done => {
     exec('./mathematica-test-runner -i --foo -b --bar', (error, stdout, stderr) => {
-      if (error) throw error
+      should.not.exist(error)
       stdout.split('\n')[0].should.equal('Invalid option \'--foo\'')
       done()
     })
@@ -34,7 +34,7 @@ describe('Mathematica-Test-Runner', () => {
     let helpPath = path.join(__dirname, './assets/help.txt')
     const helpText = fs.readFileSync(helpPath, 'utf8')
     exec('./mathematica-test-runner --help', (error, stdout, stderr) => {
-      if (error) throw error
+      should.not.exist(error)
       stdout.should.equal(helpText)
       done()
     })
@@ -44,7 +44,7 @@ describe('Mathematica-Test-Runner', () => {
     let helpPath = path.join(__dirname, './assets/help.txt')
     const helpText = fs.readFileSync(helpPath, 'utf8')
     exec('./mathematica-test-runner -h', (error, stdout, stderr) => {
-      if (error) throw error
+      should.not.exist(error)
       stdout.should.equal(helpText)
       done()
     })
@@ -52,7 +52,7 @@ describe('Mathematica-Test-Runner', () => {
 
   it('should print out the version from --version', done => {
     exec('./mathematica-test-runner --version', (error, stdout, stderr) => {
-      if (error) throw error
+      should.not.exist(error)
       stdout.should.equal(`Version: ${version}\n`)
       done()
     })
@@ -60,7 +60,7 @@ describe('Mathematica-Test-Runner', () => {
 
   it('should print out the version from -V', done => {
     exec('./mathematica-test-runner -V', (error, stdout, stderr) => {
-      if (error) throw error
+      should.not.exist(error)
       stdout.should.equal(`Version: ${version}\n`)
       done()
     })
@@ -68,7 +68,7 @@ describe('Mathematica-Test-Runner', () => {
 
   it('should handle invalid reporter', done => {
     exec('./mathematica-test-runner -R bogus', (error, stdout, stderr) => {
-      if (error) throw error
+      should.not.exist(error)
       stdout.split('\n')[0].should.equal('\'bogus\' is not a valid reporter. Please choose from {spec, tap, json, mathematica, junit}')
       done()
     })

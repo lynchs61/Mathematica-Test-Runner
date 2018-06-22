@@ -113,7 +113,7 @@ describe('Mathematica-Test-Runner', () => {
     const JSONMatchRegex = new RegExp(JSONMatchString)
     it('should produce the correct JSON output to stdout', done => {
       exec('./mathematica-test-runner -R json ./mathematicaTests/test', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         stdout.should.match(JSONMatchRegex)
         done()
       })
@@ -121,7 +121,7 @@ describe('Mathematica-Test-Runner', () => {
 
     it('should produce the correct JSON output to a file', done => {
       exec('./mathematica-test-runner -R json -o ./junit_tmp/test.json ./mathematicaTests/test', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         stdout.should.equal('')
         const filePath = path.join(__dirname, '../junit_tmp/test.json')
         fs.stat(filePath, (err, stat) => {
@@ -172,7 +172,7 @@ describe('Mathematica-Test-Runner', () => {
     const JUnitMatchRegex = new RegExp(JUnitMatchString)
     it('should produce the correct JUnit output to stdout', done => {
       exec('./mathematica-test-runner -R junit ./mathematicaTests/test', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         stdout.should.match(JUnitMatchRegex)
         done()
       })
@@ -180,7 +180,7 @@ describe('Mathematica-Test-Runner', () => {
 
     it('should produce the correct JUnit output to a file', done => {
       exec('./mathematica-test-runner -R junit -o ./junit_tmp/test.xml ./mathematicaTests/test', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         stdout.should.equal('')
         const filePath = path.join(__dirname, '../junit_tmp/test.xml')
         fs.stat(filePath, (err, stat) => {

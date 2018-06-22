@@ -38,7 +38,7 @@ describe('Mathematica-Test-Runner', () => {
     const specMatchRegex = new RegExp(specMatchString)
     it('should produce the correct Spec output to stdout', done => {
       exec('./mathematica-test-runner ./mathematicaTests/test', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         stdout.should.match(specMatchRegex)
         done()
       })
@@ -46,7 +46,7 @@ describe('Mathematica-Test-Runner', () => {
 
     it('should produce the correct Spec output to a file', done => {
       exec('./mathematica-test-runner -o ./junit_tmp/test.txt ./mathematicaTests/test', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         stdout.should.equal('')
         const filePath = path.join(__dirname, '../junit_tmp/test.txt')
         fs.stat(filePath, (err, stat) => {
@@ -75,7 +75,7 @@ ok 4 - Test Report: test2.mt None
 
     it('should produce the correct Tap output to stdout', done => {
       exec('./mathematica-test-runner -R tap ./mathematicaTests/test', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         stdout.should.equal(expected)
         done()
       })
@@ -83,7 +83,7 @@ ok 4 - Test Report: test2.mt None
 
     it('should produce the correct Tap output to a file', done => {
       exec('./mathematica-test-runner -R tap -o ./junit_tmp/test.tap ./mathematicaTests/test', (error, stdout, stderr) => {
-        if (error) throw error
+        should.not.exist(error)
         stdout.should.equal('')
         const filePath = path.join(__dirname, '../junit_tmp/test.tap')
         fs.stat(filePath, (err, stat) => {
