@@ -3,11 +3,11 @@
 pipeline {
     agent {
         node {
-            label 'math10'
+            label 'mathematica && npm-@lynch-cc'
         }
     }
     stages {
-        stage('TestArgs') {
+        stage('Test') {
             steps {
                 initialSetup()
                 sh 'npm install'
@@ -15,80 +15,23 @@ pipeline {
                     def status = sh script: 'npm run testArgs', returnStatus: true
                     println("npm run testArgs: exit(${status})")
                 }
-            }
-        }
-        stage('TestOutputAndMessages') {
-            parallel {
-                stage('TestOutput1') {
-                    agent {
-                        node {
-                            label 'math11'
-                        }
-                    }
-                    steps {
-                        initialSetup()
-                        sh 'npm install'
-                        script {
-                            def status = sh script: 'npm run testOutput1', returnStatus: true
-                            println("npm run testOutput1: exit(${status})")
-                        }
-                        stash includes: 'junit/*', name: 'testOutput1'
-                    }
+                script {
+                    def status = sh script: 'npm run testOutput1', returnStatus: true
+                    println("npm run testOutput1: exit(${status})")
                 }
-                stage('TestOutput2') {
-                    agent {
-                        node {
-                            label 'math12'
-                        }
-                    }
-                    steps {
-                        initialSetup()
-                        sh 'npm install'
-                        script {
-                            def status = sh script: 'npm run testOutput2', returnStatus: true
-                            println("npm run testOutput2: exit(${status})")
-                        }
-                        stash includes: 'junit/*', name: 'testOutput2'
-                    }
+                script {
+                    def status = sh script: 'npm run testOutput2', returnStatus: true
+                    println("npm run testOutput2: exit(${status})")
                 }
-                stage('TestMessageHandling') {
-                    agent {
-                        node {
-                            label 'math13'
-                        }
-                    }
-                    steps {
-                        initialSetup()
-                        sh 'npm install'
-                        script {
-                            def status = sh script: 'npm run testMessageHandling', returnStatus: true
-                            println("npm run testMessageHandling: exit(${status})")
-                        }
-                        stash includes: 'junit/*', name: 'testMessageHandling'
-                    }
+                script {
+                    def status = sh script: 'npm run testMessageHandling', returnStatus: true
+                    println("npm run testMessageHandling: exit(${status})")
                 }
             }
         }
     }
     post {
         always {
-            script {
-                try {
-                    unstash 'testOutput1'
-                } catch (error) {
-                    echo "No stash found for testOutput1"
-                }
-                try {
-                    unstash 'testOutput2'
-                } catch (error) {
-                    echo "No stash found for testOutput2"
-                }
-                try {
-                    unstash 'testMessageHandling'
-                } catch (error) {
-                    echo "No stash found for testMessageHandling"
-                }
-            }
             publishReports()
         }
         success {
