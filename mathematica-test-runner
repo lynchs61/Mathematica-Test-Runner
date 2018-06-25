@@ -388,7 +388,7 @@ If[KeyExistsQ[argsResult, "exit"],
 Module[{fileList, testResults, reporterResults},
   fileList = {};
 
-  fileList = FileNames["*", argsResult["target"], IgnoreCase -> True];
+  fileList = Select[FileNames["*", argsResult["target"], 10, IgnoreCase -> True], !DirectoryQ[#] &];
   If[Length[fileList] == 0,
     If[FileExistsQ[argsResult["target"]],
       AppendTo[fileList, argsResult["target"]]
@@ -398,6 +398,16 @@ Module[{fileList, testResults, reporterResults},
   If[Length[fileList] == 0,
     Print[StringTemplate["The target '``' is neither a directory with test files, nor an individual test file."][argsResult["target"]]]; Exit[]
   ];
+
+  (* Make sure the file paths are not ambiguous *)
+  fileList = AbsoluteFileName /@ fileList;
+
+  (* Get rid of any files that don't contain a "BeginTestSection" and "EndTestSection" *)
+  fileList = Extract[fileList, Position[FindList[#, {"BeginTestSection", "EndTestSection"}] & /@ fileList, {_, _}]];
+
+  WriteString["stderr", "Operating on the following test files:\n"];
+  WriteString["stderr", "  - " <> # <> "\n"] & /@ fileList;
+  WriteString["stderr", "\n"];
 
   testResults = TestReport /@ fileList;
 
