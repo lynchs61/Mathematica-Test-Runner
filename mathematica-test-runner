@@ -6,7 +6,7 @@
 
 (*Print[$ScriptCommandLine];*)
 
-version = "1.0.37";
+version = "1.0.38";
 
 versionInfo[] :=
     StringTemplate["Version: ``"][version];
@@ -149,11 +149,21 @@ parseOptsInitial[scriptCommandLine_] :=
 
 argsResult = parseOptsInitial[$ScriptCommandLine];
 
+removeHoldForm[string_] := StringReplace[string, RegularExpression["HoldForm\\[(.+)\\]"] -> "$1" ]
+
 getTestObject[testReportObject_, outcomePattern_] :=
-    Module[{topTitle, results, tests},
+    Module[{topTitle, results,
+      expectedOutput, actualOutput,
+      expectedMessages, actualMessages,
+      tests},
       topTitle = testReportObject["Title"];
       results = List @@ testReportObject["TestResults"];
+
       If[StringMatchQ[#["Outcome"], outcomePattern],
+        expectedOutput = removeHoldForm[ToString[#["ExpectedOutput"], InputForm]];
+        actualOutput = removeHoldForm[ToString[#["ActualOutput"], InputForm]];
+        expectedMessages = removeHoldForm[ToString[#["ExpectedMessages"], InputForm]];
+        actualMessages = removeHoldForm[ToString[#["ActualMessages"], InputForm]];
         <|"filetitle" -> topTitle,
           "title" -> ToString[#["TestID"]],
           "fullTitle" -> topTitle <> " - " <> ToString[#["TestID"]],
@@ -161,12 +171,12 @@ getTestObject[testReportObject_, outcomePattern_] :=
           "status" -> #["Outcome"],
           "err" ->
               If[StringMatchQ[#["Outcome"], If[argsResult["ignoremessages"], "Failure", "Failure" | "MessagesFailure"]],
-                <|"expected" -> StringTemplate["expected `` to equal ``"][ToString[#["ExpectedOutput"]], ToString[#["ActualOutput"]]],
-                  "expectedValue" -> ToString[#["ExpectedOutput"]],
-                  "actualValue" -> ToString[#["ActualOutput"]],
-                  "expectedMsg" -> StringTemplate["expected `` to be ``"][ToString[#["ExpectedMessages"]], ToString[#["ActualMessages"]]],
-                  "expectedMessages" -> ToString[#["ExpectedMessages"]],
-                  "actualMessages" -> ToString[#["ActualMessages"]]|>,
+                <|"expected" -> StringTemplate["expected `` to equal ``"][expectedOutput, actualOutput],
+                  "expectedValue" -> expectedOutput,
+                  "actualValue" -> actualOutput,
+                  "expectedMsg" -> StringTemplate["expected `` to be ``"][expectedMessages, actualMessages],
+                  "expectedMessages" -> expectedMessages,
+                  "actualMessages" -> actualMessages|>,
                 <||>
               ]
         |>, {}] & /@ results
@@ -348,11 +358,11 @@ outputJUnit[testResults_] :=
                     XMLObject["CDATASection"][
                       Switch[testResult["Outcome"],
                         "Failure",
-                        StringTemplate[
-                          "Verification Error: expected `` to equal ``"][ToString[testResult["ExpectedOutput"]], ToString[testResult["ActualOutput"]]],
+                        StringTemplate["Verification Error: expected `` to equal ``"]
+                        [removeHoldForm[ToString[testResult["ExpectedOutput"], InputForm]], removeHoldForm[ToString[testResult["ActualOutput"], InputForm]]],
                         "MessagesFailure",
-                        StringTemplate[
-                          "Unexpected Messages(s):  expected `` to be ``"][ToString[testResult["ExpectedMessages"]], ToString[testResult["ActualMessages"]]]
+                        StringTemplate["Unexpected Messages(s):  expected `` to be ``"]
+                        [removeHoldForm[ToString[testResult["ExpectedMessages"], InputForm]], removeHoldForm[ToString[testResult["ActualMessages"], InputForm]]]
                       ]
                     ]}]},
                   {}
